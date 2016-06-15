@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
 
-dir_name = '/Users/annepstein/Work/Deconv/AstroImages/'
+dir_name = '/Users/annepstein/Work/Deconv/'
 
 #filename = dir_name+'fpC-007202-r2-0199'+'.fits'
 #hdulist = fits.open(filename)  # open a FITS file
@@ -21,11 +21,10 @@ n.readline() # Throw away first line of .txt file
 for line in n:
     img_tag = line.strip()
     
-
-    f = open(dir_name+img_tag+'.cat','r')
+    f = open(dir_name+'Results/'+img_tag+'.cat','r')
     cat_hdr_size = 11
     
-    PRINT = True
+    PRINT = False
     if PRINT:
         for i in range(cat_hdr_size):
             print f.readline()
@@ -46,7 +45,7 @@ for line in n:
         source['THETA_IMAGE'] = float(column[10])
         data.append(source)
         
-    g = open(dir_name+img_tag+'.reg','w')
+    g = open(dir_name+'Results/'+img_tag+'.reg','w')
     # Initializing .reg file
     g.write('# Region file format: DS9 version 4.1\n')
     g.write('global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1\n')
@@ -57,4 +56,4 @@ for line in n:
         g.write(Line)
     g.close()
     
-print os.getcwd()
+#print os.getcwd()

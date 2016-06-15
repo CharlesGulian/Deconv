@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
 
-dir_name = '/Users/annepstein/Documents/Astro Images/'
+dir_name = '/Users/annepstein/Work/Deconv/AstroImages/'
 
 #filename = dir_name+'fpC-007202-r2-0199'+'.fits'
 #hdulist = fits.open(filename)  # open a FITS file

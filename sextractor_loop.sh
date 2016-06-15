@@ -1,6 +1,6 @@
 #!/bin/bash
 # Iteratively runs sextractor on all .FITS files in current directory; creates .cat catalog file and .FITS check image of the same name as original .FITS file (check image name appended with _checkimg)
-
+# New comment
 touch img_name.txt
 echo > img_name.txt
 # Clear current contents of img_name

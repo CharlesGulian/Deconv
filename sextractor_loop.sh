@@ -5,26 +5,17 @@ echo > img_name.txt
 # Clear current contents of img_name
 for f in AstroImages/*.fits
 do
-	cp default.sex config.sex
-	# Create a temporary configuration file for each image (this technique can be used to customize any part of config file)
-
 	FNAME=$(echo $f | sed 's/.fits//' | sed 's/AstroImages\///')
 	# Copy name of .FITS file to variable FNAME
 	
 	echo $FNAME >> img_name.txt
 	# Append filename to img_name.txt
 
-	sed -i '' "s/\[\[catalog\]\]/Results\/${FNAME}/" config.sex
-	# Rewrite .cat filename to match original .FITS filename
+	MG_ZRO=$(python get_magzero.py)
+	# Get MAG_ZEROPOINT parameter from .fits file header (Python script)
 
-	sed -i '' "s/\[\[check\]\]/Results\/${FNAME}_checkimg/" config.sex
-	# Rewrite check image filename to match original .FITS filename with "_checkimg" appended
-
-	MG_ZRO=$(python FITSheader.py)
-	sed -i '' "s/\[\[MG_ZERO\]\]/${MG_ZRO}/" config.sex
-
-	sex $f -c config.sex
-	# Run SExtractor on current image
+	sex $f -c default.sex  -CATALOG_NAME Results/$FNAME.cat -MAG_ZEROPOINT $MG_ZRO -CHECKIMAGE_TYPE APERTURES -CHECKIMAGE_NAME Results/$FNAME_checkimg.fits
+	# Run SExtractor on current image with preferences
 done
 
 ./create_regfile.py

@@ -3,3 +3,9 @@ fpC-007202-r2-0152
 fpC-007202-r2-0165
 fpC-007202-r2-0199
 fpC-206-x4684-y126_stitched_alignCropped-COADD
+fpC-4868-x4211-y138_stitched_alignCropped
+fpC-4874-x4052-y124_stitched_alignCropped
+fpC-6383-x5176-y121_stitched_alignCropped
+fpC-6484-x4078-y134_stitched_alignCropped
+fpC-6584-x4447-y144_stitched_alignCropped
+fpC-7006-x5226-y115_stitched_alignCropped

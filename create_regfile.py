@@ -11,19 +11,20 @@ import os
 
 dir_name = os.getcwd()
 
-#filename = dir_name+img_tag+'.fits'
-#hdulist = fits.open(filename)  # open a FITS file
-#fits_hdr = hdulist[0].header
-#hdulist.close()
 
 n = open(dir_name + '/img_name.txt','r')
 n.readline() # Ignore first line of .txt file
 for line in n:
     img_tag = line.strip()
     
+    #filename = dir_name+'/AstroImages/'img_tag+'.fits'
+    #hdulist = fits.open(filename)  # open a FITS file
+    #fits_hdr = hdulist[0].header
+    #hdulist.close()
+    
     f = open(dir_name+'/Results/'+img_tag+'.cat','r')
     lines = f.readlines()
-    cat_hdr_size = len(lines[len(lines)-1].split()) # Number of output columns in default.param
+    cat_hdr_size = len(lines[len(lines)-1].split()) # Catalog header size; number of output columns in default.param
     f.seek(0) # Reset pointer to start of file
     lines = None
     

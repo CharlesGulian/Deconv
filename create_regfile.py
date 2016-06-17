@@ -11,13 +11,13 @@ import os
 
 dir_name = os.getcwd()
 
-#filename = dir_name+'fpC-007202-r2-0199'+'.fits'
+#filename = dir_name+img_tag+'.fits'
 #hdulist = fits.open(filename)  # open a FITS file
 #fits_hdr = hdulist[0].header
 #hdulist.close()
 
 n = open(dir_name + '/img_name.txt','r')
-n.readline() # Throw away first line of .txt file
+n.readline() # Ignore first line of .txt file
 for line in n:
     img_tag = line.strip()
     
@@ -56,7 +56,7 @@ for line in n:
     g.write('image\n')
     for i in range(len(data)):
         Obj = data[i]
-        Line = 'ellipse('+str(Obj['X_IMAGE'])+','+str(Obj['Y_IMAGE'])+','+str(Obj['A_IMAGE'])+','+str(Obj['B_IMAGE'])+','+str(Obj['THETA_IMAGE'])+')\n'
+        Line = 'ellipse('+str(Obj['X_IMAGE'])+','+str(Obj['Y_IMAGE'])+','+str(Obj['KRON_RADIUS']*Obj['A_IMAGE'])+','+str(Obj['KRON_RADIUS']*Obj['B_IMAGE'])+','+str(Obj['THETA_IMAGE'])+')\n'
         g.write(Line)
     g.close()
     

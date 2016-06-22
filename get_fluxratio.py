@@ -70,7 +70,7 @@ flux1,flux2 = [],[]
 x,y = [],[]
 for i in range(len(data1)):
     Obj1,Obj2 = data1[i],data2[i]
-    if abs(Obj1['FLUX_BEST']/Obj2['FLUX_BEST']) > 20.0:
+    if abs(Obj1['FLUX_BEST']/Obj2['FLUX_BEST']) > 200.0:
         next # Ignore outliers
     flux1.append(Obj1['FLUX_BEST'])
     flux2.append(Obj2['FLUX_BEST'])
@@ -83,13 +83,29 @@ x,y = np.array(x),np.array(y)
 
 # Plotting flux ratios in 3D:
 
+'''
 from mpl_toolkits.mplot3d import Axes3D
 fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-ax.scatter(x, y, flux_ratio, c='b', marker='o')
+ax1 = fig.add_subplot(111, projection='3d')
+ax1.scatter(x, y, flux_ratio, c='b', marker='o')
+ax1.set_xlabel('X_IMAGE')
+ax1.set_ylabel('Y_IMAGE')
+ax1.set_zlabel('Flux Ratio')
+'''
 
-ax.set_xlabel('X_IMAGE')
-ax.set_ylabel('Y_IMAGE')
-ax.set_zlabel('Flux Ratio')
+'''
+fig2 = plt.figure()
+ax2 = fig2.add_subplot(211, projection='3d')
+ax2.scatter(x, y, flux1, c='g', marker='o')
+ax2.set_xlabel('X_IMAGE: Image 1')
+ax2.set_ylabel('Y_IMAGE: Image 1')
+ax2.set_zlabel('Flux: Image 1')
+
+ax3 = fig2.add_subplot(212, projection='3d')
+ax3.scatter(x, y, flux2, c='g', marker='o')
+ax3.set_xlabel('X_IMAGE: Image 2')
+ax3.set_ylabel('Y_IMAGE: Image 2')
+ax3.set_zlabel('Flux: Image 2')
 
 plt.show()
+'''

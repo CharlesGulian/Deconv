@@ -28,36 +28,3 @@ f0 = flux20*const # Base flux value (f0)
 
 MAG_ZEROPOINT = 2.5*np.log10(f0)
 print MAG_ZEROPOINT
-
-plot = False
-if plot: 
-    f = open(dir_name+'fpC-007202-r2-0199.cat','r')
-    cat_hdr_size = 12
-    
-    PRINT = True
-    for i in range(cat_hdr_size):
-        if PRINT:
-            print f.readline()
-        else:
-            f.readline()
-    
-    data = []
-    magnitudes = []
-    for line in f:
-        line = line.strip()
-        column = line.split()
-        magnitude = float(column[4])
-        source = {}
-        source['NUMBER'] = int(column[0])
-        source['MAG_BEST'] = float(column[4])
-        magnitudes.append(magnitude + MAG_ZEROPOINT)
-        data.append(source)
-        
-    data, magnitudes = np.array(data), np.array(magnitudes)
-    n, bins, other = plt.hist(magnitudes, 35, facecolor='green', alpha=0.75)
-    plt.title('MAG_BEST + MAG_ZEROPOINT: MAG_ZEROPOINT = ' + str(MAG_ZEROPOINT)[0:7])
-    plt.xlabel('MAG_BEST')
-    plt.ylabel('Frequency (N)')
-    #plt.axis([])
-    #plt.grid(True)
-    plt.show()

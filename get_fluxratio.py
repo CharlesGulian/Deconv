@@ -22,7 +22,7 @@ img_tag2 = (n.readline()).strip()
 #fits_hdr = hdulist[0].header
 #hdulist.close()
 
-f1 = open(dir_name+'/Results/'+img_tag1+'_'+img_tag1+'_comparison.cat','r')
+f1 = open(dir_name+'/Results/'+img_tag1+'_'+img_tag1+'_compare.cat','r')
 lines = f1.readlines()
 cat_hdr_size = len(lines[len(lines)-1].split()) # Catalog header size; number of output columns in default.param
 f1.seek(0) # Reset pointer to start of file
@@ -50,7 +50,7 @@ for line in f1:
     source[params[0]] = int(column[0]) # First column = object #
     data1.append(source)
     
-f2 = open(dir_name+'/Results/'+img_tag1+'_'+img_tag2+'_comparison.cat','r')
+f2 = open(dir_name+'/Results/'+img_tag1+'_'+img_tag2+'_compare.cat','r')
 data2 = []
 for i in range(cat_hdr_size):
     f2.readline()
@@ -77,35 +77,27 @@ for i in range(len(data1)):
     x.append(Obj1['X_IMAGE'])
     y.append(Obj1['Y_IMAGE'])
 
-flux1,flux2 = np.array(flux1),np.array(flux2)
-flux_ratio = np.divide(flux1,flux2)
 x,y = np.array(x),np.array(y)
 
-# Plotting flux ratios in 3D:
-
+flux1,flux2 = np.array(flux1),np.array(flux2)
+fluxAvg = 0.5*(flux1+flux2)
+fluxRatio = np.divide(flux1,flux2)
+fluxRatio_mean = np.mean(fluxRatio)
+fluxRatio_std = np.std(fluxRatio)
+fluxRatio_meanSubtracted = fluxRatio - fluxRatio_mean
 '''
-from mpl_toolkits.mplot3d import Axes3D
-fig = plt.figure()
-ax1 = fig.add_subplot(111, projection='3d')
-ax1.scatter(x, y, flux_ratio, c='b', marker='o')
-ax1.set_xlabel('X_IMAGE')
-ax1.set_ylabel('Y_IMAGE')
-ax1.set_zlabel('Flux Ratio')
-'''
+fluxRatio_meanSubtracted_sigmaClipped = fluxRatio_meanSubtracted
+for i in range(np.shape(fluxRatio)[0]):
+    for j in range(np.shape(fluxRatio)[1]):
+        
+        if np.abs(fluxRatio_meanSubtracted_sigmaClipped[i,j]) >= 2*fluxRatio_std:
+            fluxRatio_meanSubtracted_sigmaClipped[i,j] = 2*fluxRatio_std*np.sign(fluxRatio_meanSubtracted_sigmaClipped[i,j])
+        else:
+            next
+#'''
 
-'''
-fig2 = plt.figure()
-ax2 = fig2.add_subplot(211, projection='3d')
-ax2.scatter(x, y, flux1, c='g', marker='o')
-ax2.set_xlabel('X_IMAGE: Image 1')
-ax2.set_ylabel('Y_IMAGE: Image 1')
-ax2.set_zlabel('Flux: Image 1')
-
-ax3 = fig2.add_subplot(212, projection='3d')
-ax3.scatter(x, y, flux2, c='g', marker='o')
-ax3.set_xlabel('X_IMAGE: Image 2')
-ax3.set_ylabel('Y_IMAGE: Image 2')
-ax3.set_zlabel('Flux: Image 2')
-
+# Plotting object flux ratio
+plt.scatter(x, y, a=np.log(fluxAvg), c=fluxRatio_meanSubtracted, alpha=0.75)
+plt.colorbar()
 plt.show()
-'''
+#'''

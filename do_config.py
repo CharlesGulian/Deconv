@@ -26,7 +26,9 @@ parser.add_argument('-d','--dual',help='Configure for dual-image (comparison) mo
 args = parser.parse_args() # Get command line arguments
 
 if args.dual:
+    print 'Configuring SExtractor for dual image mode'
     image_file1,image_file2 = (args.image_file).split(',')
+    print image_file1, image_file2
 else:
     image_file = args.image_file
 
@@ -93,8 +95,8 @@ p.close()
 # Getting image filename "tag" (without .fits extension)
 # For argparse use:
 if args.dual:
-    img_tag1 = image_file1[len('AstroImages/'):(len(image_file)-len('.fits'))]
-    img_tag2 = image_file2[len('AstroImages/'):(len(image_file)-len('.fits'))]
+    img_tag1 = image_file1[len('AstroImages/'):(len(image_file1)-len('.fits'))]
+    img_tag2 = image_file2[len('AstroImages/'):(len(image_file2)-len('.fits'))]
 else:
     img_tag = image_file[len('AstroImages/'):(len(image_file)-len('.fits'))]
 
@@ -122,16 +124,14 @@ except KeyError:
 config_dict['PARAMETERS_NAME'] = dir_name+'/'+args.param_file
 config_dict['CHECKIMAGE_TYPE'] = 'NONE'
 if args.dual: # Dual image mode configuration parameters
-    config_dict['CATALOG_NAME'] = img_tag1+'_'+img_tag2+'_comparison.cat'
-else: # (Configuration parameters for single image mode)
-
-config_dict['CATALOG_NAME'] = dir_name+'/Results/'+img_tag+'.cat'
-config_dict['CHECKIMAGE_NAME'] = dir_name+'/Results/'+img_tag+'_'+config_dict['CHECKIMAGE_TYPE']+'.fits'
+    config_dict['CATALOG_NAME'] = dir_name+'/Results/'+img_tag1+'_'+img_tag2+'_compare.cat'
+    config_dict['CHECKIMAGE_NAME'] = dir_name+'/Results/'+img_tag2+'_compare_'+config_dict['CHECKIMAGE_TYPE']+'.fits'
+else: # Single image mode configuration parameters
+    config_dict['CATALOG_NAME'] = dir_name+'/Results/'+img_tag+'.cat'
+    config_dict['CHECKIMAGE_NAME'] = dir_name+'/Results/'+img_tag+'_'+config_dict['CHECKIMAGE_TYPE']+'.fits'
 
 # Writing new configuration file from config_dict:
 c = open(dir_name+'/'+args.config_file,'w')
 for i,j in config_dict.items():
     c.write(i+' '+j+'\n')
 c.close()
-
-{FNAME1}_${FNAME2}_comparison

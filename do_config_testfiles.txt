@@ -1,3 +1,0 @@
-f7.fits
-config.sex
-output.param

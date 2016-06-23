@@ -4,7 +4,6 @@ Created on Thu Jun 16 10:36:10 2016
 
 @author: charlesgulian
 """
-
 import os
 import matplotlib.pyplot as plt
 import numpy as np
@@ -29,7 +28,7 @@ f1.seek(0) # Reset pointer to start of file
 lines = None
 
 params = []
-PRINT = False
+PRINT = True
 if PRINT:
     for i in range(cat_hdr_size):
         param = (f1.readline()).split()[2] # Get parameter name
@@ -47,7 +46,6 @@ for line in f1:
     source = {}
     for i in range(len(params)):
         source[params[i]] = float(column[i])
-    source[params[0]] = int(column[0]) # First column = object #
     data1.append(source)
     
 f2 = open(dir_name+'/Results/'+img_tag1+'_'+img_tag2+'_compare.cat','r')
@@ -60,7 +58,6 @@ for line in f2:
     source = {}
     for i in range(len(params)):
         source[params[i]] = float(column[i])
-    source[params[0]] = int(column[0]) # First column = object #
     data2.append(source)
 
 if len(data1) != len(data2):
@@ -70,8 +67,6 @@ flux1,flux2 = [],[]
 x,y = [],[]
 for i in range(len(data1)):
     Obj1,Obj2 = data1[i],data2[i]
-    if abs(Obj1['FLUX_BEST']/Obj2['FLUX_BEST']) > 200.0:
-        next # Ignore outliers
     flux1.append(Obj1['FLUX_BEST'])
     flux2.append(Obj2['FLUX_BEST'])
     x.append(Obj1['X_IMAGE'])
@@ -85,19 +80,22 @@ fluxRatio = np.divide(flux1,flux2)
 fluxRatio_mean = np.mean(fluxRatio)
 fluxRatio_std = np.std(fluxRatio)
 fluxRatio_meanSubtracted = fluxRatio - fluxRatio_mean
-'''
+
 fluxRatio_meanSubtracted_sigmaClipped = fluxRatio_meanSubtracted
-for i in range(np.shape(fluxRatio)[0]):
-    for j in range(np.shape(fluxRatio)[1]):
-        
-        if np.abs(fluxRatio_meanSubtracted_sigmaClipped[i,j]) >= 2*fluxRatio_std:
-            fluxRatio_meanSubtracted_sigmaClipped[i,j] = 2*fluxRatio_std*np.sign(fluxRatio_meanSubtracted_sigmaClipped[i,j])
+for i in range(len(fluxRatio)):
+        if np.abs(fluxRatio_meanSubtracted_sigmaClipped[i]) >= 2*fluxRatio_std:
+            fluxRatio_meanSubtracted_sigmaClipped[i] = 2*fluxRatio_std*np.sign(fluxRatio_meanSubtracted_sigmaClipped[i])
         else:
             next
 #'''
 
 # Plotting object flux ratio
-plt.scatter(x, y, a=np.log(fluxAvg), c=fluxRatio_meanSubtracted, alpha=0.75)
+plt.scatter(x, y, s=25*np.log10(0.1*fluxAvg), c=fluxRatio_meanSubtracted_sigmaClipped, alpha=0.75)
+plt.axis([0,1600,0,1600])
 plt.colorbar()
+plt.xlabel('X_IMAGE')
+plt.ylabel('Y_IMAGE')
+plt.title('Flux Ratio Color Map')
+plt.savefig(dir_name+'/Figures/'+img_tag1+'_'+img_tag2+'_fluxRatio.png')
 plt.show()
 #'''

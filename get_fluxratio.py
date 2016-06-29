@@ -84,6 +84,7 @@ fluxRatio_meanSubtracted = fluxRatio - fluxRatio_mean
 maxSig = np.linspace(0.05,1.0,15) # Sigma
 
 
+
 for j in range(len(maxSig)): 
     
     #''' # Exclude clipped data points, copy to fluxRatio_excess
@@ -96,6 +97,7 @@ for j in range(len(maxSig)):
             fluxRatio_meanSubtracted_sigmaClipped.append(fluxRatio_meanSubtracted[i])
             x_clip.append(x[i])
             y_clip.append(y[i])
+            
         else:
             fluxRatio_excess.append(fluxRatio_meanSubtracted[i])
             x_exc.append(x[i])
@@ -114,23 +116,24 @@ for j in range(len(maxSig)):
     if plot:
         # Plotting source-wise flux ratio
         #plt.scatter(x, y, s=25*np.log10(0.1*fluxAvg), c=fluxRatio_meanSubtracted_sigmaClipped, vmin=-1.5*maxSig[j], vmax=1.5*maxSig[j], alpha=0.75)
-        plt.scatter(x_clip, y_clip, s=25*np.log10(0.1*fluxAvg), c=fluxRatio_meanSubtracted_sigmaClipped, vmin=-0.5*fluxRatio_std, vmax=0.5*fluxRatio_std, alpha=0.75)        
+        plt.scatter(x_clip, y_clip, c=fluxRatio_meanSubtracted_sigmaClipped, vmin=-0.5*fluxRatio_std, vmax=0.5*fluxRatio_std, alpha=0.75)        
         plt.axis([0,1600,0,1600])
         plt.colorbar()
         plt.xlabel('X_IMAGE')
         plt.ylabel('Y_IMAGE')
-        plt.title('Flux Ratio Color Map: sigma cutoff = '+str(maxSig[j])[0:3])
-        plt.savefig((dir_name+'/Figures/{}_{}_maxSig{}_fluxRatio.png'.format(img_tag1, img_tag2, str(maxSig[j])[0:3])))
+        plt.title('Flux Ratio Color Map: sigma cutoff = '+str(maxSig[j])[0:4])
+        plt.savefig((dir_name+'/Figures/{}_{}_maxSig{}_fluxRatio.png'.format(img_tag1, img_tag2, str(maxSig[j])[0:4])))
         plt.close()
     
     hist = True
     if hist:
-        plt.subplot(211)
-        plt.hist(fluxRatio,bins=20,color='green')
-        plt.title('Histogram of Flux Ratio')
-        plt.subplot(212)
+        #plt.subplot(211)
+        #plt.hist(fluxRatio,bins=20,color='green')
+        #plt.title('Histogram of Flux Ratio')
+        #plt.subplot(212)
         plt.hist(fluxRatio_meanSubtracted_sigmaClipped,bins=20,color='green')
-        plt.ylabel(('Mean subtracted + clipped @ {} sigma').format(str(maxSig[j])[0:3]))
+        plt.title('Histogram of Flux Ratio')
+        plt.ylabel(('Mean subtracted + clipped @ {} sigma').format(str(maxSig[j])[0:4]))
         plt.xlabel('Flux ratio')
-        plt.savefig((dir_name+'/Figures/Hist_{}_{}_maxSig{}_fluxRatio.png'.format(img_tag1, img_tag2, str(maxSig[j])[0:3])))
+        plt.savefig((dir_name+'/Figures/Hist_{}_{}_maxSig{}_fluxRatio.png'.format(img_tag1, img_tag2, str(maxSig[j])[0:4])))
         plt.close()

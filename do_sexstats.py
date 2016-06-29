@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 #from astropy.io import fits
 
+# Later add command line functionality
+
 dir_name = os.getcwd()
 
 n = open(dir_name + '/img_name_compare.txt','r')

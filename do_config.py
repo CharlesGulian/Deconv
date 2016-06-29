@@ -20,8 +20,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('image_file',help='Input .FITS image file name',type=str)
 parser.add_argument('config_file',help='Input .sex configuration file name',type=str)
 parser.add_argument('param_file',help='Input .param output catalog parameter file name',type=str)
-parser.add_argument('-d','--dual',help='Configure for dual-image (comparison) mode; enter image ' +\
-                     'filenames as usual but separated with a comma (no spaces)',action='store_true')
+parser.add_argument('-d','--dual',help='Configure for dual-image (comparison) mode; enter comma-separated image ' +\
+                     'filenames (e.g. image1.fits,image2.fits)',action='store_true')
 
 args = parser.parse_args() # Get command line arguments
 

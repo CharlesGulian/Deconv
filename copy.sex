@@ -1,4 +1,4 @@
-CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/fpC-7006-x5226-y115_stitched_alignCropped_BACKGROUND.fits
+CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/test_img2_NONE.fits
 PARAMETERS_NAME /Users/annepstein/Work/Deconv/copy.param
 ANALYSIS_THRESH 1.5
 SATUR_KEY SATURATE
@@ -16,7 +16,7 @@ FILTER Y
 BACK_TYPE AUTO
 ASSOC_PARAMS 2,3,4
 DEBLEND_MINCONT 0.005
-CATALOG_NAME /Users/annepstein/Work/Deconv/Results/fpC-7006-x5226-y115_stitched_alignCropped.cat
+CATALOG_NAME /Users/annepstein/Work/Deconv/Results/test_img2.cat
 FLAG_IMAGE flag.fits
 DETECT_THRESH 1.5
 CATALOG_TYPE ASCII_HEAD
@@ -30,7 +30,7 @@ PHOT_AUTOPARAMS 2.5,3.5
 MEMORY_OBJSTACK 3000
 PIXEL_SCALE 0.396
 MAG_GAMMA 4.0
-CHECKIMAGE_TYPE BACKGROUND
+CHECKIMAGE_TYPE NONE
 CLEAN Y
 WEIGHT_IMAGE weight.fits
 ASSOC_NAME sky.list

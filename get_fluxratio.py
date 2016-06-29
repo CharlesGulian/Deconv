@@ -81,21 +81,56 @@ fluxRatio_mean = np.mean(fluxRatio)
 fluxRatio_std = np.std(fluxRatio)
 fluxRatio_meanSubtracted = fluxRatio - fluxRatio_mean
 
-fluxRatio_meanSubtracted_sigmaClipped = fluxRatio_meanSubtracted
-for i in range(len(fluxRatio)):
-        if np.abs(fluxRatio_meanSubtracted_sigmaClipped[i]) >= 2*fluxRatio_std:
-            fluxRatio_meanSubtracted_sigmaClipped[i] = 2*fluxRatio_std*np.sign(fluxRatio_meanSubtracted_sigmaClipped[i])
-        else:
-            next
-#'''
+maxSig = np.linspace(0.05,1.0,15) # Sigma
 
-# Plotting object flux ratio
-plt.scatter(x, y, s=25*np.log10(0.1*fluxAvg), c=fluxRatio_meanSubtracted_sigmaClipped, alpha=0.75)
-plt.axis([0,1600,0,1600])
-plt.colorbar()
-plt.xlabel('X_IMAGE')
-plt.ylabel('Y_IMAGE')
-plt.title('Flux Ratio Color Map')
-plt.savefig(dir_name+'/Figures/'+img_tag1+'_'+img_tag2+'_fluxRatio.png')
-plt.show()
-#'''
+
+for j in range(len(maxSig)): 
+    
+    #''' # Exclude clipped data points, copy to fluxRatio_excess
+    fluxRatio_meanSubtracted_sigmaClipped = []
+    fluxRatio_excess = []
+    x_clip,y_clip = [],[]
+    x_exc,y_exc = [],[]
+    for i in range(len(fluxRatio_meanSubtracted)):
+        if np.abs(fluxRatio_meanSubtracted[i]) < maxSig[j]*fluxRatio_std:
+            fluxRatio_meanSubtracted_sigmaClipped.append(fluxRatio_meanSubtracted[i])
+            x_clip.append(x[i])
+            y_clip.append(y[i])
+        else:
+            fluxRatio_excess.append(fluxRatio_meanSubtracted[i])
+            x_exc.append(x[i])
+            y_exc.append(y[i])
+        
+    ''' # Include clipped data points, set equal maxSig[j]
+    fluxRatio_meanSubtracted_sigmaClipped = fluxRatio_meanSubtracted
+    for i in range(len(fluxRatio)):
+            if np.abs(fluxRatio_meanSubtracted_sigmaClipped[i]) >= maxSig[j]*fluxRatio_std: # maxSig[j] = 1.0 later
+                fluxRatio_meanSubtracted_sigmaClipped[i] = maxSig[j]*fluxRatio_std*np.sign(fluxRatio_meanSubtracted_sigmaClipped[i])
+            else:
+                next
+    #'''
+    
+    plot = True
+    if plot:
+        # Plotting source-wise flux ratio
+        #plt.scatter(x, y, s=25*np.log10(0.1*fluxAvg), c=fluxRatio_meanSubtracted_sigmaClipped, vmin=-1.5*maxSig[j], vmax=1.5*maxSig[j], alpha=0.75)
+        plt.scatter(x_clip, y_clip, s=25*np.log10(0.1*fluxAvg), c=fluxRatio_meanSubtracted_sigmaClipped, vmin=-0.5*fluxRatio_std, vmax=0.5*fluxRatio_std, alpha=0.75)        
+        plt.axis([0,1600,0,1600])
+        plt.colorbar()
+        plt.xlabel('X_IMAGE')
+        plt.ylabel('Y_IMAGE')
+        plt.title('Flux Ratio Color Map: sigma cutoff = '+str(maxSig[j])[0:3])
+        plt.savefig((dir_name+'/Figures/{}_{}_maxSig{}_fluxRatio.png'.format(img_tag1, img_tag2, str(maxSig[j])[0:3])))
+        plt.close()
+    
+    hist = True
+    if hist:
+        plt.subplot(211)
+        plt.hist(fluxRatio,bins=20,color='green')
+        plt.title('Histogram of Flux Ratio')
+        plt.subplot(212)
+        plt.hist(fluxRatio_meanSubtracted_sigmaClipped,bins=20,color='green')
+        plt.ylabel(('Mean subtracted + clipped @ {} sigma').format(str(maxSig[j])[0:3]))
+        plt.xlabel('Flux ratio')
+        plt.savefig((dir_name+'/Figures/Hist_{}_{}_maxSig{}_fluxRatio.png'.format(img_tag1, img_tag2, str(maxSig[j])[0:3])))
+        plt.close()

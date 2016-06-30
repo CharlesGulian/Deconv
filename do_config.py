@@ -122,7 +122,7 @@ except KeyError:
 
 # Specifying other configuration parameters:
 config_dict['PARAMETERS_NAME'] = dir_name+'/'+args.param_file
-config_dict['CHECKIMAGE_TYPE'] = 'NONE'
+config_dict['CHECKIMAGE_TYPE'] = 'APERTURES'
 if args.dual: # Dual image mode configuration parameters
     config_dict['CATALOG_NAME'] = dir_name+'/Results/'+img_tag1+'_'+img_tag2+'_compare.cat'
     config_dict['CHECKIMAGE_NAME'] = dir_name+'/Results/'+img_tag2+'_compare_'+config_dict['CHECKIMAGE_TYPE']+'.fits'

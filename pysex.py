@@ -44,44 +44,26 @@ def loop_sex(img_dir):
     # Python version of sextractor_loop.sh
     if not os.path.exists(img_dir):
         img_dir = os.path.join(curr_dir,img_dir)
+    print 'Image directory: ',img_dir
+        
     # List names of .FITS files in img_dir
-    imgNames = glob.glob(img_dir+'*.fits')
+    imgNames = glob.glob(os.path.join(img_dir,'*.fits'))
+    print len(imgNames)
 
     for imgName in imgNames:
         
+        print 'Copying configuration and output catalog parameter files...'
         _check_call(['cp','default.sex','copy.sex'])
         _check_call(['cp','default.param','copy.param'])
         
         # Do configuration with ./do_config.py imgName copy.sex copy.param
         # Rewrite this section after modifying do_config.py
+        print 'Configuring with do_config.py'
         do_config_args = [os.path.join(curr_dir,'do_config.py'),imgName,'copy.sex','copy.param']
-        _check_call([do_config_args])
+        _check_call(do_config_args)
         
+        print ('Running SExtractor on current image: {}').format(imgName)
         call_sex(imgName,config_file='copy.sex')
         
-    
-
-'''
-#echo > img_name.txt
-# Clear current contents of img_name
-for f in AstroImages/*.fits
-do
-        # Copy default versions of configuration file and output catalog parameter file
-        cp default.sex copy.sex
-        cp default.param copy.param
-
-        # Rewrite configuration and output catalog parameters in Python script do_config.py
-        ./do_config.py $f copy.sex copy.param
-
-        ######
-        #echo $FNAME >> img_name.txt
-        # Append filename to img_name.txt
-        ######
-
-        sex $f -c copy.sex
-        # Run SExtractor
-        #exit
-done
-
-#./create_regfile.py
-'''
+        
+loop_sex(os.path.join(curr_dir,'AstroImages'))

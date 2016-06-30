@@ -81,7 +81,7 @@ fluxRatio_mean = np.mean(fluxRatio)
 fluxRatio_std = np.std(fluxRatio)
 fluxRatio_meanSubtracted = fluxRatio - fluxRatio_mean
 
-maxSig = np.linspace(0.05,1.0,15) # Sigma
+maxSig = np.linspace(0.05,1.0,10) # Sigma
 
 
 
@@ -90,6 +90,7 @@ for j in range(len(maxSig)):
     #''' # Exclude clipped data points, copy to fluxRatio_excess
     fluxRatio_meanSubtracted_sigmaClipped = []
     fluxRatio_excess = []
+    fluxAvg_clip = []
     x_clip,y_clip = [],[]
     x_exc,y_exc = [],[]
     for i in range(len(fluxRatio_meanSubtracted)):
@@ -97,6 +98,7 @@ for j in range(len(maxSig)):
             fluxRatio_meanSubtracted_sigmaClipped.append(fluxRatio_meanSubtracted[i])
             x_clip.append(x[i])
             y_clip.append(y[i])
+            fluxAvg_clip.append(fluxAvg[i])
             
         else:
             fluxRatio_excess.append(fluxRatio_meanSubtracted[i])
@@ -116,7 +118,7 @@ for j in range(len(maxSig)):
     if plot:
         # Plotting source-wise flux ratio
         #plt.scatter(x, y, s=25*np.log10(0.1*fluxAvg), c=fluxRatio_meanSubtracted_sigmaClipped, vmin=-1.5*maxSig[j], vmax=1.5*maxSig[j], alpha=0.75)
-        plt.scatter(x_clip, y_clip, c=fluxRatio_meanSubtracted_sigmaClipped, vmin=-0.5*fluxRatio_std, vmax=0.5*fluxRatio_std, alpha=0.75)        
+        plt.scatter(x_clip, y_clip, s=25*np.log10(0.1*np.array(fluxAvg_clip)), c=fluxRatio_meanSubtracted_sigmaClipped, vmin=-1.5*maxSig[j]*fluxRatio_std, vmax=1.5*maxSig[j]*fluxRatio_std, alpha=0.75)        
         plt.axis([0,1600,0,1600])
         plt.colorbar()
         plt.xlabel('X_IMAGE')
@@ -125,7 +127,7 @@ for j in range(len(maxSig)):
         plt.savefig((dir_name+'/Figures/{}_{}_maxSig{}_fluxRatio.png'.format(img_tag1, img_tag2, str(maxSig[j])[0:4])))
         plt.close()
     
-    hist = True
+    hist = False
     if hist:
         #plt.subplot(211)
         #plt.hist(fluxRatio,bins=20,color='green')

@@ -64,7 +64,7 @@ for line in f2:
 
 if len(data1) != len(data2):
     print "Warning: data arrays are of different lengths"
-
+'''
 flux1,flux2 = [],[]
 x,y = [],[]
 for i in range(len(data1)):
@@ -89,7 +89,7 @@ for i in range(len(fluxRatio)):
             fluxRatio_meanSubtracted_sigmaClipped[i] = 2*fluxRatio_std*np.sign(fluxRatio_meanSubtracted_sigmaClipped[i])
         else:
             next
-#'''
+#'#''
 
 # Plotting object flux ratio
 plt.scatter(x, y, s=25*np.log10(0.1*fluxAvg), c=fluxRatio_meanSubtracted_sigmaClipped, alpha=0.75)
@@ -101,3 +101,5 @@ plt.title('Flux Ratio Color Map')
 plt.savefig(dir_name+'/Figures/'+img_tag1+'_'+img_tag2+'_fluxRatio.png')
 plt.show()
 #'''
+
+

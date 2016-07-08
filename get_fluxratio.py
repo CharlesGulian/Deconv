@@ -20,15 +20,18 @@ img_tag2 = (n.readline()).strip()
 #hdulist = fits.open(filename)  # open a FITS file
 #fits_hdr = hdulist[0].header
 #hdulist.close()
+    
+img_tag1 = 'fpC-6484-x4078-y134_stitched_alignCropped'
+img_tag2 = 'fpC-7006-x5226-y115_stitched_alignCropped'
 
-f1 = open(dir_name+'/Results/'+img_tag1+'_'+img_tag1+'_compare.cat','r')
+f1 = open(os.path.join(dir_name,'Results',img_tag1+'_'+img_tag1+'_compare.cat'),'r')
 lines = f1.readlines()
 cat_hdr_size = len(lines[len(lines)-1].split()) # Catalog header size; number of output columns in default.param
 f1.seek(0) # Reset pointer to start of file
 lines = None
 
 params = []
-PRINT = True
+PRINT = False
 if PRINT:
     for i in range(cat_hdr_size):
         param = (f1.readline()).split()[2] # Get parameter name
@@ -48,7 +51,7 @@ for line in f1:
         source[params[i]] = float(column[i])
     data1.append(source)
     
-f2 = open(dir_name+'/Results/'+img_tag1+'_'+img_tag2+'_compare.cat','r')
+f2 = open(os.path.join(dir_name,'Results',img_tag1+'_'+img_tag2+'_compare.cat'),'r')
 data2 = []
 for i in range(cat_hdr_size):
     f2.readline()
@@ -82,8 +85,6 @@ fluxRatio_std = np.std(fluxRatio)
 fluxRatio_meanSubtracted = fluxRatio - fluxRatio_mean
 
 maxSig = np.linspace(0.05,1.0,10) # Sigma
-
-
 
 for j in range(len(maxSig)): 
     

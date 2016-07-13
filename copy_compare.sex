@@ -1,9 +1,9 @@
-CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/fpC-5781-x25627-y293_stitched_alignCropped_compare_APERTURES.fits
+CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/fpC-4868-x4211-y138_stitched_alignCropped_compare_NONE.fits
 PARAMETERS_NAME /Users/annepstein/Work/Deconv/copy_compare.param
 ANALYSIS_THRESH 1.5
 SATUR_KEY SATURATE
 MEMORY_PIXSTACK 300000
-WEIGHT_TYPE NONE
+WEIGHT_TYPE MAP_WEIGHT
 XSL_URL file:///usr/local/share/sextractor/sextractor.xsl
 GAIN 0.0
 MEMORY_BUFSIZE 1024
@@ -16,7 +16,7 @@ FILTER Y
 BACK_TYPE AUTO
 ASSOC_PARAMS 2,3,4
 DEBLEND_MINCONT 0.005
-CATALOG_NAME /Users/annepstein/Work/Deconv/Results/fpC-6484-x4078-y134_stitched_alignCropped_fpC-5781-x25627-y293_stitched_alignCropped_compare.cat
+CATALOG_NAME /Users/annepstein/Work/Deconv/Results/fpC-6383-x5176-y121_stitched_alignCropped_fpC-4868-x4211-y138_stitched_alignCropped_compare.cat
 FLAG_IMAGE flag.fits
 DETECT_THRESH 1.5
 CATALOG_TYPE ASCII_HEAD
@@ -30,9 +30,9 @@ PHOT_AUTOPARAMS 2.5,3.5
 MEMORY_OBJSTACK 3000
 PIXEL_SCALE 0.396
 MAG_GAMMA 4.0
-CHECKIMAGE_TYPE APERTURES
+CHECKIMAGE_TYPE NONE
 CLEAN Y
-WEIGHT_IMAGE weight.fits
+WEIGHT_IMAGE /Users/annepstein/Work/Deconv/AstroImages/Masks/fpC-6383-x5176-y121_stitched_alignCropped_mask.fits
 ASSOC_NAME sky.list
 MAG_ZEROPOINT 28.05
 ASSOC_RADIUS 2.0

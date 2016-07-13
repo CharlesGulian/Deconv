@@ -23,65 +23,109 @@ goodImage2 = 'AstroImages/Good/fpC-7006-x5226-y115_stitched_alignCropped.fits'
 goodImage3 = 'AstroImages/Good/fpC-4868-x4211-y138_stitched_alignCropped.fits'
 goodImage4 = 'AstroImages/Good/fpC-6383-x5176-y121_stitched_alignCropped.fits'
 
+goodImgs = [goodImage1,goodImage2,goodImage3,goodImage4]
+
 # Bad image comparison:
 badImage1 = 'AstroImages/Bad/fpC-5759-x24775-y300_stitched_alignCropped.fits' # Modest gradient from top to bottom
 badImage2 = 'AstroImages/Bad/fpC-6548-x24940-y302_stitched_alignCropped.fits' # Modest gradient from top to bottom
 badImage3 = 'AstroImages/Bad/fpC-5781-x25627-y293_stitched_alignCropped.fits' # Very weak gradient from bottom left to top right
 badImage4 = 'AstroImages/Bad/fpC-7140-x24755-y270_stitched_alignCropped.fits' # Weak gradient from bottom left to top right
 
-# Images to compare 
-testImage1 = goodImage1
-testImage2 = badImage1
+badImgs = [badImage1,badImage2,badImage3,badImage4]
 
-#output = pysex.compare(testImage1,testImage2) # (Implement/uncomment to create new comparison file)
+for testImage1 in goodImgs:
+    for testImage2 in goodImgs:
+        
+        if testImage1 == testImage2:
+            continue
+        
+        # Images to compare 
+        #testImage1 = badImage1
+        #testImage2 = badImage2
+        
+        
 
-img_tag1 = (os.path.split(testImage1)[1])
-img_tag1 = img_tag1[0:len(img_tag1)-len('.fits')]
-img_tag2 = (os.path.split(testImage2)[1])
-img_tag2 = img_tag2[0:len(img_tag2)-len('.fits')]
-
-outputCat1 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag1+'_compare.cat')
-if not os.path.exists(outputCat1):
-    print 'Error: first output catalog path does not exist'
-
-outputCat2 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag2+'_compare.cat')
-if not os.path.exists(outputCat2):
-    print 'Error: second output catalog path does not exist'
+        
+        
+        output = pysex.compare(testImage1,testImage2) # (Implement/uncomment to create new comparison file)
+        
+        img_tag1 = (os.path.split(testImage1)[1])
+        img_tag1 = img_tag1[0:len(img_tag1)-len('.fits')]
+        img_tag2 = (os.path.split(testImage2)[1])
+        img_tag2 = img_tag2[0:len(img_tag2)-len('.fits')]
+        
+        outputCat1 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag1+'_compare.cat')
+        if not os.path.exists(outputCat1):
+            print 'Error: first output catalog path does not exist'
+        
+        outputCat2 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag2+'_compare.cat')
+        if not os.path.exists(outputCat2):
+            print 'Error: second output catalog path does not exist'
+            
+        # Create sex_stats.data objects:
+        img1data = sex_stats.data(outputCat1)
+        img2data = sex_stats.data(outputCat2)
     
-# Create sex_stats.data objects:
-img1data = sex_stats.data(outputCat1)
-img2data = sex_stats.data(outputCat2)
+        #-----------------------------------------------------------------------------#
+        # Flux ratio analysis:
+        
+        flux1,flux2 = img1data.get_data('FLUX_BEST'),img2data.get_data('FLUX_BEST')
+        x,y = img1data.get_data('X_IMAGE'),img1data.get_data('Y_IMAGE')
+        
+        
+        
+        flux1,flux2 = np.array(flux1),np.array(flux2)
+        #''' 
+        print ' '
+        print 'Minimum flux values: ', np.min(flux1),' ',np.min(flux2)
+        print 'Minimum pixel values: ', np.min(sex_stats.getPixelValues(testImage1)),' ',np.min(sex_stats.getPixelValues(testImage2))
+        print 'Median value of images: ', np.median(sex_stats.getPixelValues(testImage1)),' ',np.median(sex_stats.getPixelValues(testImage2))
+        print 'Mean value of images: ', np.mean(sex_stats.getPixelValues(testImage1)),' ',np.mean(sex_stats.getPixelValues(testImage2))          
+        print ' '
+        #'''
+        #'''
+        #fluxAvg = 0.5*(flux1+flux2)
+        fluxRatio = np.divide(flux1,flux2)
+        fluxRatio_mean = np.mean(fluxRatio)
+        fluxRatio_std = np.std(fluxRatio)
+        fluxRatio_meanSubtracted = fluxRatio #- fluxRatio_mean # (NOT MEAN SUBTRACTED)
+        #'''
+        x,y = np.arange(1600)        
+        fluxRatio_meanSubtracted = np.divide(sex_stats.getPixelValues(testImage1),sex_stats.getPixelValues(testImage2))
+        
+        
+        maxSig = np.linspace(40.0,10.0,10) # Sigma cutoff values
+        maxSig = np.array([100.0]) # Temporary
+        for s in range(len(maxSig)):
+            
+            m,n = 6,6
+            xBins,yBins,fluxRatioBins = sex_stats.binData(x,y,fluxRatio_meanSubtracted,M=m,N=n)
+            
+            fluxRatioBin_Avgs = np.zeros([m,n])
+            for i in range(m):
+                for j in range(n):
+                    # Clipping data in bins:
+                    fluxRatioBins_sigmaClipped = []
+                    for k in range(len(fluxRatioBins[i,j])):
+                        if np.abs((fluxRatioBins[i,j])[k]) <= maxSig[s]*np.std(fluxRatioBins[i,j]):
+                            fluxRatioBins_sigmaClipped.append(fluxRatioBins[i,j][k])
+                    fluxRatioBin_Avgs[i,j] = np.mean(fluxRatioBins_sigmaClipped)
+            
+            plt.pcolormesh(fluxRatioBin_Avgs,cmap='Greys_r')
+            plt.colorbar()
+            plt.xlabel('X Bin')
+            plt.ylabel('Y Bin')
+            plt.title('Flux Ratio Bin Averages: {} x {}'.format(m,n))
+            if not os.path.exists(os.path.join(curr_dir,'Figures','Jul13Imgs','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]))):
+                os.mkdir(os.path.join(curr_dir,'Figures','Jul13Imgs','{}_{}'.format(img_tag1[0:10],img_tag2[0:10])))
+            plt.savefig(os.path.join(curr_dir,'Figures','Jul13Imgs','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]),'fluxRatioBin_Avgs_sigmaClip{}.png'.format(str(maxSig[s])[0:4])))
+            plt.close()
 
 
-#-----------------------------------------------------------------------------#
-# Flux ratio analysis:
-
-flux1,flux2 = img1data.get_data('FLUX_BEST'),img2data.get_data('FLUX_BEST')
-
-x,y = img1data.get_data('X_IMAGE'),img1data.get_data('Y_IMAGE')
-
-#'''
-# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:
-
-#temp = np.std(flux1)*np.random.randn(flux1.size) + np.mean(flux1)
-#flux1 = temp
-#flux1 = np.mean(flux1)*np.ones(flux1.size) + np.random.randn(flux1.size)
-#temp = (np.mean(flux2)/np.mean(flux1))*flux1 + np.std(flux2)*np.random.randn(flux2.size)
-#flux2 = temp
-#flux2 += 5.0*x + 5.0*y - (np.mean(x) + np.mean(y)) + np.random.randn(flux2.size)
 
 
-# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:
-#'''
+""" THIS SECTION OF CODE WAS COMMENTED OUT ON July 12th, 2016; uncomment to do statistical analysis
 
-flux1,flux2 = np.array(flux1),np.array(flux2)
-fluxAvg = 0.5*(flux1+flux2)
-fluxRatio = np.divide(flux1,flux2)
-fluxRatio_mean = np.mean(fluxRatio)
-fluxRatio_std = np.std(fluxRatio)
-fluxRatio_meanSubtracted = fluxRatio - fluxRatio_mean
-
-maxSig = np.linspace(0.02,1.0,15) # Sigma
 chiSqNorm_linear = []
 chiSqNorm_flat = []
 rSqAdj = []
@@ -183,3 +227,20 @@ plt.xlabel('Sigma Cutoff  (# standard deviations from mean)')
 plt.ylabel('Adjusted r-Squared')
 plt.show()
 '''
+"""
+
+
+
+''' # Testing with artificial data: random noise and linear equations with noise
+# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:
+
+#temp = np.std(flux1)*np.random.randn(flux1.size) + np.mean(flux1)
+#flux1 = temp
+#flux1 = np.mean(flux1)*np.ones(flux1.size) + np.random.randn(flux1.size)
+#temp = (np.mean(flux2)/np.mean(flux1))*flux1 + np.std(flux2)*np.random.randn(flux2.size)
+#flux2 = temp
+#flux2 += 10.0*(x + y - np.mean(x) - np.mean(y))
+
+
+# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:
+#'''

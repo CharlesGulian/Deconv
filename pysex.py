@@ -8,6 +8,7 @@ Created on Mon Jun 27 23:51:07 2016
 import os
 import glob
 import subprocess
+import sex_config
 
 sex_path = '/usr/local/bin/sex'
 curr_dir = os.getcwd()
@@ -19,10 +20,10 @@ def _call(args):
         subprocess.call(args,shell=False)
     except subprocess.CalledProcessError:
         print 'Error: sex_call CalledProcessError'
-        pass # handle errors in the called executable
+        pass # Handle errors in the called executable
     except OSError:
         print 'Error: OSError'
-        pass # executable not found
+        pass # Executable not found
 
 def call_sex(imgName,config_file=None,args_ext=[]):
     # Call SExtractor from Python script
@@ -56,44 +57,40 @@ def loop(img_dir):
 
     for imgName in imgNames:
         
-        #print 'Copying configuration and output catalog parameter files'
-        _call(['cp','default.sex','copy.sex'])
-        _call(['cp','default.param','copy.param'])
-        
-        # Do configuration with ./do_config.py imgName copy.sex copy.param
-        # Rewrite this section after modifying do_config.py
-        
-        #print 'Configuring with do_config.py'
-        do_config_args = [os.path.join(curr_dir,'do_config.py'),imgName,'copy.sex','copy.param']
-        _call(do_config_args)
+        fig = sex_config.configure(imgName,'default.sex','default.param')
+        fig.default_config()
+        fig.write_config_file(new_config_file='copy.sex',new_param_file='copy.param')
         
         print ('Running SExtractor on current image: {}').format(imgName)
-        call_sex(imgName,config_file='copy.sex')
-        
-        
+        call_sex(imgName,config_file='copy.sex')    
+  
 def compare(imgName1,imgName2):
     
-    #print 'Copying configuration and output catalog parameter files'
-    _call(['cp','default.sex','copy_compare.sex'])
-    _call(['cp','default.param','copy_compare.param'])
+    fig = sex_config.configure(imgName1+','+imgName1,'default.sex','default.param',dual=True)
+    fig.default_config()
+    fig.write_config_file(new_config_file='copy_compare.sex',new_param_file='copy_compare.param')
     
-    # Do configuration with ./do_config.py imgName copy.sex copy.param
-    # Rewrite this section after modifying do_config.py
-    #print 'Configuring with do_config.py'
-    do_config_args = [os.path.join(curr_dir,'do_config.py'),imgName1+','+imgName1,\
-                    'copy_compare.sex','copy_compare.param','-d']
-    _call(do_config_args)
+    MASK = True
+    mask_file = os.path.join(curr_dir,'AstroImages','Masks',imgName1.replace('.fits','_mask.fits').replace('AstroImages/Good/',''))    
+    if MASK and os.path.exists(mask_file):        
+        fig.reconfigure('WEIGHT_IMAGE',mask_file)
+        fig.reconfigure('WEIGHT_TYPE','MAP_WEIGHT')
+        #pass
+    fig.write_config_file(new_config_file='copy_compare.sex',new_param_file='copy_compare.param')
+    
     
     print('Detecting from {}, measuring from {}').format(imgName1,imgName1)
     call_sex(imgName1+','+imgName1,config_file='copy_compare.sex')
     
-    _call(['cp','default.sex','copy_compare.sex'])
-    _call(['cp','default.param','copy_compare.param'])
+    fig = sex_config.configure(imgName1+','+imgName2,'default.sex','default.param',dual=True)
+    fig.default_config()
     
-    #print 'Configuring with do_config.py'
-    do_config_args = [os.path.join(curr_dir,'do_config.py'),imgName1+','+imgName2,\
-                    'copy_compare.sex','copy_compare.param','-d']
-    _call(do_config_args)
+    mask_file = os.path.join(curr_dir,'AstroImages','Masks',imgName1.replace('.fits','_mask.fits').replace('AstroImages/Good/',''))
+    if MASK and os.path.exists(mask_file):      
+        fig.reconfigure('WEIGHT_IMAGE',mask_file)
+        fig.reconfigure('WEIGHT_TYPE','MAP_WEIGHT')
+        #pass
+    fig.write_config_file(new_config_file='copy_compare.sex',new_param_file='copy_compare.param')
 
     print('Detecting from {}, measuring from {}').format(imgName1,imgName2)
     call_sex(imgName1+','+imgName2,config_file='copy_compare.sex')

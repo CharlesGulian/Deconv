@@ -8,63 +8,146 @@ Created on Wed Jun 29 20:31:36 2016
 
 import os
 os.chdir('/Users/annepstein/Work/Deconv')
+curr_dir = os.getcwd()
 import numpy as np
 import pandas as pd
+from astropy.io import fits
 
 class data:
     
     def __init__(self,outputCatName):
-        f = open(outputCatName)
-        lines = f.readlines()
-        cat_hdr_size = len(lines[len(lines)-1].split()) # Catalog header size; number of output columns in default.param
-        f.seek(0) # Reset pointer to start of file
-        lines = None
         
-        params = []
-        PRINT = False
-        if PRINT:
-            for i in range(cat_hdr_size):
-                param = (f.readline()).split()[2] # Get parameter name
-                print param
-                params.append(param)
-        else:
-            for i in range(cat_hdr_size):
-                param = (f.readline()).split()[2] # Get parameter name
-                params.append(param)
-        self.Params = params
-        
-        _Data = []
-        for line in f:
-            line = line.strip()
-            column = line.split()
-            source = {}
-            for i in range(len(params)):
-                source[params[i]] = float(column[i])
-            _Data.append(source)
-        self.Data = _Data
+        self.outputCatName = outputCatName
+        with open(outputCatName) as f:
+            f = open(outputCatName)
+            lines = f.readlines()
+            cat_hdr_size = len(lines[len(lines)-1].split()) # Catalog header size; number of output columns in default.param
+            f.seek(0) # Reset pointer to start of file
+            lines = None
+            
+            params = []
+            PRINT = False
+            if PRINT:
+                for i in range(cat_hdr_size):
+                    param = (f.readline()).split()[2] # Get parameter name
+                    print param
+                    params.append(param)
+            else:
+                for i in range(cat_hdr_size):
+                    param = (f.readline()).split()[2] # Get parameter name
+                    params.append(param)
+            self.Params = params
+            
+            _Data = []
+            for line in f:
+                line = line.strip()
+                column = line.split()
+                source = {}
+                for i in range(len(params)):
+                    source[params[i]] = float(column[i])
+                _Data.append(source)
+            self.Data = _Data
     
     def get_data(self,paramName):
+        
         paramData = []
         for i in range(len(self.Data)):
             Obj = self.Data[i] # Get data for i'th object in catalog
             paramData.append(Obj[paramName])
         return np.array(paramData)
-        
-
-def linReg3D(x1,x2,y):
-    # Linear least-squares model fitting for 3D data
-    A = np.column_stack((np.ones(np.shape(x1)),x1,x2))
-    coeffs,residuals,rank,s = np.linalg.lstsq(A,y)
-    return [coeffs,residuals,rank,s]
     
+    def create_regFile(self,regFileName=None):
+        # Creates a DS9 .reg file for SExtractor output catalog using appropriate columns
+    
+        if regFileName == None:
+            regFileName = self.outputCatName.replace('.cat','.reg')
+        
+        with open(os.path.join(curr_dir,'Results',regFileName),'w') as g:
+            # Initializing .reg file
+            g.write('# Region file format: DS9 version 4.1\n')
+            g.write('global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1\n')
+            g.write('image\n')
+            for i in range(len(self.Data)):
+                Obj = self.Data[i]
+                Line = 'ellipse('+str(Obj['X_IMAGE'])+','+str(Obj['Y_IMAGE'])+','+str(Obj['KRON_RADIUS']*Obj['A_IMAGE'])+','+str(Obj['KRON_RADIUS']*Obj['B_IMAGE'])+','+str(Obj['THETA_IMAGE'])+')\n'
+                g.write(Line)            
 
-def rSquaredAdjusted(Obs,Exp,numParams):
-    # Computes adjusted R^2 value from linear model residuals and data
-    y,residuals = Obs, Obs - Exp
-    N,p = y.size,numParams # Number of data points, number of 
-    rSq = 1.0 - np.sum(np.square(residuals))/np.sum(np.square(y-y.mean()))
-    rSqAdj = 1.0 - ((1.0 - rSq)*(float(N - 1.0)))/(float(((N - p) - 1.0)))
-    return rSqAdj
+
+def binData(x1,x2,y,M=3,N=3,ImgD1=[0,1600],ImgD2=[0,1600]):
+    '''
+    - Bins y-data along x1 and x2 into MxN bins (default MxN = 3x3)
+    - Bin sizes/intervals are measured from image dimensions in pixels, NOT from
+        min/max values of x1 and x2
+        * For this option, specify ImgD1=[min(x1),max(x1)], ImgD2=[min(x2),max(x2)]
+    - Default image dimension = 1600x1600 pixels
+    '''
+    
+    if len(x1) != len(x2):
+        raise Exception('Error: x1 and x2 must have same size')
+        return
+    
+    #arr = np.empty([M,N,0])
+    
+    x1Dict,x2Dict,yDict = {},{},{}
+    for i in range(M):
+        for j in range(N):
+            x1Dict[i,j] = []
+            x2Dict[i,j] = []
+            yDict[i,j] = []
+    
+    x1bin_length= float(ImgD1[1]-ImgD1[0])/float(M)
+    x2bin_length = float(ImgD2[1]-ImgD2[0])/float(N)
+    
+    for i in range(M):
+        x1_inds_lower = np.where(x1 >= i*x1bin_length)
+        x1_inds_upper = np.where(x1 < (i+1)*x1bin_length)
+        x1_inds = np.intersect1d(x1_inds_lower,x1_inds_upper)
+        for j in range(N):
+            x2_inds_lower = np.where(x2 >= j*x2bin_length)
+            x2_inds_upper = np.where(x2 < (j+1)*x2bin_length)
+            x2_inds = np.intersect1d(x2_inds_lower,x2_inds_upper)
+            
+            inds = np.intersect1d(x1_inds,x2_inds) # These indices correspond to points in the ith,jth bin
+            
+            x1Dict[i,j].extend(x1[inds])
+            x2Dict[i,j].extend(x2[inds])
+            yDict[i,j].extend(y[inds])
+            
+    return x1Dict,x2Dict,yDict
+
+
+def binImage(image_file,M=3,N=3):
+    # Bins pixels along image axes into MxN bins (default MxN = 3x3)  
+
+    pixels = getPixelValues(image_file)
+    imgDim1,imgDim2 = np.shape(pixels)
+    xBinSize,yBinSize = float(imgDim1)/float(M),float(imgDim2)/float(N)
+    
+    imgBinDict = {} # Dictionary for storing 
+    
+    for i in range(M):
+        for j in range(N):
+            imgBinDict[i,j] = pixels[int(np.ceil(i*xBinSize)):int(np.floor((i+1)*xBinSize)),\
+                                    int(np.ceil(j*yBinSize)):int(np.floor((j+1)*yBinSize))]
+    return imgBinDict
+    
+    
+def createRegFile(outputCatName,regFileName=None):
+    if regFileName == None:
+        regFileName = outputCatName.replace('.cat','.reg')
+    
+    temp = data(outputCatName)
+    outputData = temp.Data
+    with open(os.path.join(curr_dir,'Results',regFileName),'w') as g:
+        # Initializing .reg file
+        g.write('# Region file format: DS9 version 4.1\n')
+        g.write('global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1\n')
+        g.write('image\n')
+        for i in range(len(outputData)):
+            Obj = outputData[i]
+            Line = 'ellipse('+str(Obj['X_IMAGE'])+','+str(Obj['Y_IMAGE'])+','+str(Obj['KRON_RADIUS']*Obj['A_IMAGE'])+','+str(Obj['KRON_RADIUS']*Obj['B_IMAGE'])+','+str(Obj['THETA_IMAGE'])+')\n'
+            g.write(Line)
+            
 
 def chiSquareNormalized(Obs,Exp,numParams):
     ''' Compute the "reduced" or "normalized" chi-square value given a set of observed values, 
@@ -82,7 +165,28 @@ def chiSquareNormalized(Obs,Exp,numParams):
     
     chiSquareNorm = np.sum(np.square(Obs - Exp))*(1/var)*(1/df) # Compute normalized chi-square
     return chiSquareNorm
+        
+
+def getPixelValues(image_file):
+    hdulist = fits.open(image_file)
+    data = hdulist[0].data
+    hdulist.close()
+    return data
 
 
+def linReg3D(x1,x2,y):
+    # Linear least-squares model fitting for 3D data
+    A = np.column_stack((np.ones(np.shape(x1)),x1,x2))
+    coeffs,residuals,rank,s = np.linalg.lstsq(A,y)
+    return [coeffs,residuals,rank,s]
     
-    
+
+def rSquaredAdjusted(Obs,Exp,numParams):
+    # Computes adjusted R^2 value from linear model residuals and data
+    y,residuals = Obs, Obs - Exp
+    N,p = y.size,numParams # Number of data points, number of 
+    rSq = 1.0 - np.sum(np.square(residuals))/np.sum(np.square(y-y.mean()))
+    rSqAdj = 1.0 - ((1.0 - rSq)*(float(N - 1.0)))/(float(((N - p) - 1.0)))
+    return rSqAdj
+
+testImage = 'AstroImages/Good/fpC-6484-x4078-y134_stitched_alignCropped.fits'

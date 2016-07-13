@@ -1,2 +1,0 @@
-test_img1
-test_img2

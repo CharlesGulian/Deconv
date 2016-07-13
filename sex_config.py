@@ -6,20 +6,11 @@ Created on Fri Jun 17 16:28:41 2016
 @author: charlesgulian
 """
 
-# This script is passed arguments from the command line of a .fits image, .sex config file, .param output parameter file
-
 import os
 dir_name = os.getcwd()
 curr_dir = dir_name
 from astropy.io import fits
 import numpy as np
-
-# 7.1.16 I need to get rid of or comment out command line functionality here, 
-# and also modularize certain aspects of this script such that one can use calls like
-# do_config.reconfigure('PARAM',value); do_config.outputParams.append();
-# do_config.write_config_file(); and more. Pretty much, I want to have full control
-# of the functions within this script, but from outside the script
-
 
 class configure:
     
@@ -79,7 +70,7 @@ class configure:
         for param in self.output_params:
             self.param_dict[param] = True
           
-        with open(os.getcwd(curr_dir,new_param_file),'w') as p:
+        with open(os.path.join(curr_dir,new_param_file),'w') as p:
             for i,j in self.param_dict.iteritems():
                 if j:
                     p.write(str(i)+'\n')
@@ -93,7 +84,7 @@ class configure:
         self.config_dict['PARAMETERS_NAME'] = os.path.join(curr_dir,new_param_file)
         
         temp = new_param_file # To avoid confusion in the next line
-        self.write_output_file(new_param_file=temp)
+        self.write_param_file(new_param_file=temp)
         
         if new_config_file == None:
             new_config_file = self.config_file
@@ -111,7 +102,7 @@ class configure:
             img_tag1 = img_tag1[0:(len(img_tag1)-len('.fits'))]
             img_tag2 = img_tag2[0:(len(img_tag2)-len('.fits'))]
         else:
-            img_tag = os.path.split(self.image_file)
+            img_tag = os.path.split(self.image_file)[1]
             img_tag = img_tag[0:(len(img_tag)-len('.fits'))]
         
         # Extracting .FITS header information for configuration file
@@ -135,11 +126,11 @@ class configure:
         self.reconfigure('CHECKIMAGE_TYPE','NONE')
         
         if self.dual:
-            self.reconfigure('CATALOG_NAME',os.path.join(curr_dir,'Results',img_tag1+'_'+img_tag2+'_compare.cat'))
-            self.reconfigure('CHECK_IMAGENAME',os.path.join(curr_dir,'Results',img_tag2+'_compare_'+self.config_dict['CHECKIMAGE_TYPE']+'.fits'))
+            self.reconfigure('CATALOG_NAME',os.path.join(curr_dir,'Results',(img_tag1+'_'+img_tag2+'_compare.cat')))
+            self.reconfigure('CHECKIMAGE_NAME',os.path.join(curr_dir,'Results',(img_tag2+'_compare_'+self.config_dict['CHECKIMAGE_TYPE']+'.fits')))
         else:
-            self.reconfigure('CATALOG_NAME',os.path.join(curr_dir,'Results',img_tag+'.cat'))
-            self.reconfigure('CHECKIMAGE_NAME',os.path.join(curr_dir,'Results',img_tag+'_'+self.config_dict['CHECKIMAGE_TYPE']+'.fits'))    
+            self.reconfigure('CATALOG_NAME',os.path.join(curr_dir,'Results',(img_tag+'.cat')))
+            self.reconfigure('CHECKIMAGE_NAME',os.path.join(curr_dir,'Results',(img_tag+'_'+self.config_dict['CHECKIMAGE_TYPE']+'.fits')))   
             
             
 # NEXT STEPS:

@@ -123,11 +123,11 @@ class configure:
             self.reconfigure('MAG_ZEROPOINT',28.05)
         
         self.reconfigure('PARAMETERS_NAME',os.path.join(curr_dir,self.param_file))
-        self.reconfigure('CHECKIMAGE_TYPE','NONE')
+        self.reconfigure('CHECKIMAGE_TYPE','IDENTICAL')
         
         if self.dual:
             self.reconfigure('CATALOG_NAME',os.path.join(curr_dir,'Results',(img_tag1+'_'+img_tag2+'_compare.cat')))
-            self.reconfigure('CHECKIMAGE_NAME',os.path.join(curr_dir,'Results',(img_tag2+'_compare_'+self.config_dict['CHECKIMAGE_TYPE']+'.fits')))
+            self.reconfigure('CHECKIMAGE_NAME',os.path.join(curr_dir,'Results','CheckImages',(img_tag1+'_'+img_tag2+'_compare_'+self.config_dict['CHECKIMAGE_TYPE']+'.fits')))
         else:
             self.reconfigure('CATALOG_NAME',os.path.join(curr_dir,'Results',(img_tag+'.cat')))
             self.reconfigure('CHECKIMAGE_NAME',os.path.join(curr_dir,'Results',(img_tag+'_'+self.config_dict['CHECKIMAGE_TYPE']+'.fits')))   

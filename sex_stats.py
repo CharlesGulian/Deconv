@@ -60,9 +60,9 @@ class data:
         # Creates a DS9 .reg file for SExtractor output catalog using appropriate columns
     
         if regFileName == None:
-            regFileName = self.outputCatName.replace('.cat','.reg')
+            regFileName = self.outputCatName.replace('.cat','.reg').replace('Results/','Results/regFiles/')
         
-        with open(os.path.join(curr_dir,'Results',regFileName),'w') as g:
+        with open(regFileName,'w') as g:
             # Initializing .reg file
             g.write('# Region file format: DS9 version 4.1\n')
             g.write('global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1\n')
@@ -85,8 +85,6 @@ def binData(x1,x2,y,M=3,N=3,ImgD1=[0,1600],ImgD2=[0,1600]):
     if len(x1) != len(x2):
         raise Exception('Error: x1 and x2 must have same size')
         return
-    
-    #arr = np.empty([M,N,0])
     
     x1Dict,x2Dict,yDict = {},{},{}
     for i in range(M):
@@ -116,19 +114,23 @@ def binData(x1,x2,y,M=3,N=3,ImgD1=[0,1600],ImgD2=[0,1600]):
     return x1Dict,x2Dict,yDict
 
 
-def binImage(image_file,M=3,N=3):
+def binImage(pixelArray,M=3,N=3):
     # Bins pixels along image axes into MxN bins (default MxN = 3x3)  
-
-    pixels = getPixelValues(image_file)
+    
+    pixels = pixelArray
     imgDim1,imgDim2 = np.shape(pixels)
     xBinSize,yBinSize = float(imgDim1)/float(M),float(imgDim2)/float(N)
     
     imgBinDict = {} # Dictionary for storing 
+    #print xBinSize,yBinSize
     
     for i in range(M):
         for j in range(N):
             imgBinDict[i,j] = pixels[int(np.ceil(i*xBinSize)):int(np.floor((i+1)*xBinSize)),\
                                     int(np.ceil(j*yBinSize)):int(np.floor((j+1)*yBinSize))]
+            #print ''
+            #print 'Bin: ',i,j
+            #print 'Shape: ',np.shape(imgBinDict[i,j])
     return imgBinDict
     
     
@@ -190,3 +192,4 @@ def rSquaredAdjusted(Obs,Exp,numParams):
     return rSqAdj
 
 testImage = 'AstroImages/Good/fpC-6484-x4078-y134_stitched_alignCropped.fits'
+imgDict = binImage(getPixelValues(testImage),M=4,N=4)

@@ -8,6 +8,7 @@ import os
 curr_dir = os.getcwd()
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 import pysex
 import sex_stats
 import scipy.stats as spst
@@ -44,9 +45,6 @@ for testImage1 in goodImgs:
         #testImage2 = badImage2
         
         
-
-        
-        
         output = pysex.compare(testImage1,testImage2) # (Implement/uncomment to create new comparison file)
         
         img_tag1 = (os.path.split(testImage1)[1])
@@ -72,8 +70,6 @@ for testImage1 in goodImgs:
         flux1,flux2 = img1data.get_data('FLUX_BEST'),img2data.get_data('FLUX_BEST')
         x,y = img1data.get_data('X_IMAGE'),img1data.get_data('Y_IMAGE')
         
-        
-        
         flux1,flux2 = np.array(flux1),np.array(flux2)
         #''' 
         print ' '
@@ -84,24 +80,22 @@ for testImage1 in goodImgs:
         print ' '
         #'''
         #'''
-        #fluxAvg = 0.5*(flux1+flux2)
+        fluxAvg = 0.5*(flux1+flux2)
         fluxRatio = np.divide(flux1,flux2)
         fluxRatio_mean = np.mean(fluxRatio)
         fluxRatio_std = np.std(fluxRatio)
-        fluxRatio_meanSubtracted = fluxRatio #- fluxRatio_mean # (NOT MEAN SUBTRACTED)
+        fluxRatio_meanSubtracted = fluxRatio - fluxRatio_mean # (NOT MEAN SUBTRACTED)
         #'''
-        x,y = np.arange(1600)        
-        fluxRatio_meanSubtracted = np.divide(sex_stats.getPixelValues(testImage1),sex_stats.getPixelValues(testImage2))
+        fluxRatio = np.divide(flux1,flux2)
         
-        
-        maxSig = np.linspace(40.0,10.0,10) # Sigma cutoff values
-        maxSig = np.array([100.0]) # Temporary
+        maxSig = np.linspace(10.0,1.0,15) # Sigma cutoff values
         for s in range(len(maxSig)):
             
-            m,n = 6,6
-            xBins,yBins,fluxRatioBins = sex_stats.binData(x,y,fluxRatio_meanSubtracted,M=m,N=n)
+            m,n = 8,8
+            xBins,yBins,fluxRatioBins = sex_stats.binData(x,y,fluxRatio,M=m,N=n)
             
             fluxRatioBin_Avgs = np.zeros([m,n])
+            emptyBins = []
             for i in range(m):
                 for j in range(n):
                     # Clipping data in bins:
@@ -109,16 +103,31 @@ for testImage1 in goodImgs:
                     for k in range(len(fluxRatioBins[i,j])):
                         if np.abs((fluxRatioBins[i,j])[k]) <= maxSig[s]*np.std(fluxRatioBins[i,j]):
                             fluxRatioBins_sigmaClipped.append(fluxRatioBins[i,j][k])
+                    if len(fluxRatioBins_sigmaClipped) == 0:
+                        emptyBins.append('{},{}'.format(str(i),str(j)))
+                    fluxRatioBins[i,j] = fluxRatioBins_sigmaClipped
                     fluxRatioBin_Avgs[i,j] = np.mean(fluxRatioBins_sigmaClipped)
+            PRINT_emptyBins = False
+            if PRINT_emptyBins and (len(emptyBins) > 0):
+                print 'Warning: empty bins'
+                for i in range(len(emptyBins)):
+                    print '({})'.format(emptyBins[i]),                   
+                    
+            # Masking NaNs in fluxRatioBin_Avgs:
+
+            fluxRatioBin_Avgs_Masked = np.ma.array(fluxRatioBin_Avgs,mask=np.isnan(fluxRatioBin_Avgs))
+            cmap = matplotlib.cm.gray
+            cmap.set_bad('r',1.)
             
-            plt.pcolormesh(fluxRatioBin_Avgs,cmap='Greys_r')
+            #print np.nanmean(fluxRatioBin_Avgs)-2.0,' ',np.nanmean(fluxRatioBin_Avgs)+2.0
+            plt.pcolormesh(fluxRatioBin_Avgs_Masked,cmap=cmap,vmin=np.nanmean(fluxRatioBin_Avgs)-2.0,vmax=np.nanmean(fluxRatioBin_Avgs)+2.0)
             plt.colorbar()
             plt.xlabel('X Bin')
             plt.ylabel('Y Bin')
             plt.title('Flux Ratio Bin Averages: {} x {}'.format(m,n))
-            if not os.path.exists(os.path.join(curr_dir,'Figures','Jul13Imgs','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]))):
-                os.mkdir(os.path.join(curr_dir,'Figures','Jul13Imgs','{}_{}'.format(img_tag1[0:10],img_tag2[0:10])))
-            plt.savefig(os.path.join(curr_dir,'Figures','Jul13Imgs','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]),'fluxRatioBin_Avgs_sigmaClip{}.png'.format(str(maxSig[s])[0:4])))
+            if not os.path.exists(os.path.join(curr_dir,'Figures','Jul14Imgs','ObjBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]))):
+                os.mkdir(os.path.join(curr_dir,'Figures','Jul14Imgs','ObjBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10])))
+            plt.savefig(os.path.join(curr_dir,'Figures','Jul14Imgs','ObjBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]),'fluxRatioBin_Avgs_sigmaClip{}.png'.format(str(maxSig[s])[0:4])))
             plt.close()
 
 

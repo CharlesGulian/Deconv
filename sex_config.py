@@ -14,7 +14,7 @@ import numpy as np
 
 class configure:
     
-    default_params = ['NUMBER','FLUX_BEST','FLUXERR_BEST','MAG_BEST','MAGERR_BEST','KRON_RADIUS',\
+    default_params = ['NUMBER','FLUX_APER','FLUXERR_APER','MAG_APER','MAGERR_APER','KRON_RADIUS',\
 'X_IMAGE','Y_IMAGE','A_IMAGE','B_IMAGE','THETA_IMAGE']
     #default_params = []
     
@@ -123,7 +123,7 @@ class configure:
             self.reconfigure('MAG_ZEROPOINT',28.05)
         
         self.reconfigure('PARAMETERS_NAME',os.path.join(curr_dir,self.param_file))
-        self.reconfigure('CHECKIMAGE_TYPE','IDENTICAL')
+        self.reconfigure('CHECKIMAGE_TYPE','APERTURES')
         
         if self.dual:
             self.reconfigure('CATALOG_NAME',os.path.join(curr_dir,'Results',(img_tag1+'_'+img_tag2+'_compare.cat')))
@@ -131,7 +131,19 @@ class configure:
         else:
             self.reconfigure('CATALOG_NAME',os.path.join(curr_dir,'Results',(img_tag+'.cat')))
             self.reconfigure('CHECKIMAGE_NAME',os.path.join(curr_dir,'Results',(img_tag+'_'+self.config_dict['CHECKIMAGE_TYPE']+'.fits')))   
+        
+        # Finding and applying binary mask file to image
+        MASK = True
+        if self.dual:
+            mask_file = self.image_file1.replace('.fits','_mask.fits').replace('Good','Masks').replace('Bad','Masks')
+        else:
+            mask_file = self.image_file.replace('.fits','_mask.fits').replace('Good','Masks').replace('Bad','Masks')
+        if MASK and os.path.exists(mask_file):      
+            self.reconfigure('WEIGHT_IMAGE',mask_file)
+            self.reconfigure('WEIGHT_TYPE','MAP_WEIGHT')
             
+        # Adjust detection threshold
+        self.reconfigure('DETECT_THRESH',2.5)
             
 # NEXT STEPS:
 # 1) Dual image mode options (Done)

@@ -1,4 +1,4 @@
-CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/CheckImages/fpC-6383-x5176-y121_stitched_alignCropped_fpC-4868-x4211-y138_stitched_alignCropped_compare_IDENTICAL.fits
+CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/CheckImages/fpC-6484-x4078-y134_stitched_alignCropped_fpC-7006-x5226-y115_stitched_alignCropped_compare_APERTURES.fits
 PARAMETERS_NAME /Users/annepstein/Work/Deconv/copy_compare.param
 ANALYSIS_THRESH 1.5
 SATUR_KEY SATURATE
@@ -16,9 +16,9 @@ FILTER Y
 BACK_TYPE AUTO
 ASSOC_PARAMS 2,3,4
 DEBLEND_MINCONT 0.005
-CATALOG_NAME /Users/annepstein/Work/Deconv/Results/fpC-6383-x5176-y121_stitched_alignCropped_fpC-4868-x4211-y138_stitched_alignCropped_compare.cat
+CATALOG_NAME /Users/annepstein/Work/Deconv/Results/fpC-6484-x4078-y134_stitched_alignCropped_fpC-7006-x5226-y115_stitched_alignCropped_compare.cat
 FLAG_IMAGE flag.fits
-DETECT_THRESH 1.5
+DETECT_THRESH 5.0
 CATALOG_TYPE ASCII_HEAD
 SATUR_LEVEL 50000.0
 STARNNW_NAME default.nnw
@@ -26,13 +26,13 @@ VERBOSE_TYPE NORMAL
 ASSOCSELEC_TYPE MATCHED
 DETECT_TYPE CCD
 PHOT_PETROPARAMS 2.0,3.5
-PHOT_AUTOPARAMS 2.5,3.5
+PHOT_AUTOPARAMS (5.0, 3.5)
 MEMORY_OBJSTACK 3000
 PIXEL_SCALE 0.396
 MAG_GAMMA 4.0
-CHECKIMAGE_TYPE IDENTICAL
+CHECKIMAGE_TYPE APERTURES
 CLEAN Y
-WEIGHT_IMAGE /Users/annepstein/Work/Deconv/AstroImages/Masks/fpC-6383-x5176-y121_stitched_alignCropped_mask.fits
+WEIGHT_IMAGE /Users/annepstein/Work/Deconv/AstroImages/Masks/fpC-6484-x4078-y134_stitched_alignCropped_mask.fits
 ASSOC_NAME sky.list
 MAG_ZEROPOINT 28.05
 ASSOC_RADIUS 2.0

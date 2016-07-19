@@ -9,11 +9,11 @@ curr_dir = os.getcwd()
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+
 import pysex
 import sex_stats
-import scipy.stats as spst
-#import sex_config
-#import do_config
+import sex_config
+import fits_tools
 
 # Image deconvolution project:
 # Main script for data analysis, image comparison, photometric statistics, and more
@@ -36,102 +36,221 @@ badImgs = [badImage1,badImage2,badImage3,badImage4]
 
 for testImage1 in goodImgs:
     for testImage2 in goodImgs:
-        
         if testImage1 == testImage2:
             continue
         
-        # Images to compare 
-        #testImage1 = badImage1
-        #testImage2 = badImage2
+        # Printing image file names
+        print testImage1+' '+testImage2
         
-        
-        output = pysex.compare(testImage1,testImage2) # (Implement/uncomment to create new comparison file)
-        
-        img_tag1 = (os.path.split(testImage1)[1])
-        img_tag1 = img_tag1[0:len(img_tag1)-len('.fits')]
-        img_tag2 = (os.path.split(testImage2)[1])
-        img_tag2 = img_tag2[0:len(img_tag2)-len('.fits')]
-        
-        outputCat1 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag1+'_compare.cat')
-        if not os.path.exists(outputCat1):
-            print 'Error: first output catalog path does not exist'
-        
-        outputCat2 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag2+'_compare.cat')
-        if not os.path.exists(outputCat2):
-            print 'Error: second output catalog path does not exist'
+        medSub = False
+        if medSub:
+            testImage1_medSub = testImage1.replace('.fits','_medSub.fits')
+            testImage2_medSub = testImage2.replace('.fits','_medSub.fits')
             
-        # Create sex_stats.data objects:
-        img1data = sex_stats.data(outputCat1)
-        img2data = sex_stats.data(outputCat2)
+            fits_tools.subtractMedian(testImage1,new_image_file=testImage1_medSub)
+            fits_tools.subtractMedian(testImage2,new_image_file=testImage2_medSub)
+            
+            testImage1 = testImage1_medSub
+            testImage2 = testImage2_medSub
+        
+        # Write configuration files for SExtractor comparison
+        
+        # Writing configuration file for first image
+        fig1 = sex_config.configure(testImage1+','+testImage1,'default.sex','default.param',dual=True)
+        # Do default configuration        
+        fig1.default_config()
+        
+        # Writing onfiguration file for second image
+        fig2 = sex_config.configure(testImage1+','+testImage2,'default.sex','default.param',dual=True)
+        # Do default configuration
+        fig2.default_config()
+        
+        varParam = 'PhotAper'
+        PhotAper = np.linspace(5.0,25.0,5)
+        varParamRange = PhotAper
+        for k in range(len(varParamRange)):
+            # Adjust Kron factor
+            fig1.reconfigure('PHOT_APERTURES',PhotAper[k])
+            # Change check image name
+            temp = fig1.config_dict['CHECKIMAGE_NAME'].replace('Results/CheckImages','Figures/Jul18Imgs/Hists/'+varParam).replace('.fits','_{}{}.fits'.format(varParam,varParamRange[k]))
+            fig1.reconfigure('CHECKIMAGE_NAME',temp)
+            # Write new configuration file for first image
+            fig1.write_config_file(new_config_file='copy_compare1.sex',new_param_file='copy_compare1.param')
+            
+            # Adjust Kron factor
+            fig2.reconfigure('PHOT_APERTURES',PhotAper[k])
+            # Change check image name
+            temp = fig2.config_dict['CHECKIMAGE_NAME'].replace('Results/CheckImages','Figures/Jul18Imgs/Hists/'+varParam).replace('.fits','_{}{}.fits'.format(varParam,varParamRange[k]))
+            fig2.reconfigure('CHECKIMAGE_NAME',temp)
+            # Write new configuration file for second image
+            fig2.write_config_file(new_config_file='copy_compare2.sex',new_param_file='copy_compare2.param')
+            
+            # Compare images in SExtractor
+            output = pysex.compare(testImage1,testImage2,'copy_compare1.sex','copy_compare2.sex')
+            
+            # Get image tags
+            img_tag1 = (os.path.split(testImage1)[1])
+            img_tag1 = img_tag1[0:len(img_tag1)-len('.fits')]
+            img_tag2 = (os.path.split(testImage2)[1])
+            img_tag2 = img_tag2[0:len(img_tag2)-len('.fits')]
+            
+            outputCat1 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag1+'_compare.cat')
+            if not os.path.exists(outputCat1):
+                print 'Error: first output catalog path does not exist'
+            
+            outputCat2 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag2+'_compare.cat')
+            if not os.path.exists(outputCat2):
+                print 'Error: second output catalog path does not exist'
+                
+            # Create sex_stats.data objects:
+            img1data = sex_stats.data(outputCat1)
+            img2data = sex_stats.data(outputCat2)
+            
+            # Create .reg files from output catalogs
+            CREATE_regFiles = False
+            if CREATE_regFiles:
+                img1data.create_regFile()
+                img2data.create_regFile()
+        
+            #-----------------------------------------------------------------------------#
+            # Flux ratio analysis:
+            
+            flux1,flux2 = img1data.get_data('FLUX_APER'),img2data.get_data('FLUX_APER')
+            #mag1,mag2 = img1data.get_data('MAG_AUTO'),img2data.get_data('MAG_AUTO')
+            #flux1,flux2 = mag1,mag2
+            x,y = img1data.get_data('X_IMAGE'),img1data.get_data('Y_IMAGE')
+            
+            flux1,flux2 = np.array(flux1),np.array(flux2)
+            
+            #'''
+            fluxAvg = 0.5*(flux1+flux2)
+            fluxRatio = np.divide(flux1,flux2)
+            fluxRatio_mean = np.mean(fluxRatio)
+            fluxRatio_std = np.std(fluxRatio)
+            #fluxRatio_meanSubtracted = fluxRatio - fluxRatio_mean # (NOT MEAN SUBTRACTED)
+            #'''
+            
+            #''' 
+            print ' '
+            print 'Minimum flux values: ', np.min(flux1),' ',np.min(flux2)
+            print 'Mean flux values: ',np.mean(flux1),' ',np.mean(flux2)
+            print 'Minimum flux ratio: ', np.min(fluxRatio)
+            print ''
+            print 'Minimum values of images: ', np.min(fits_tools.getPixels(testImage1)),' ',np.min(fits_tools.getPixels(testImage2))
+            print 'Median values of images: ', np.median(fits_tools.getPixels(testImage1)),' ',np.median(fits_tools.getPixels(testImage2))
+            print 'Mean values of images: ', np.mean(fits_tools.getPixels(testImage1)),' ',np.mean(fits_tools.getPixels(testImage2))
+            print ' '
+            #'''
+            
+            # Creating histogram of flux1 and flux2
+            # plt.hist has range=(tup1,tup2) to set upper and lower bounds of histogram
+            plt.hist(flux1,bins=70,normed=False,color='green')
+            plt.hist(flux2,bins=70,normed=False,color='blue')
+            plt.title('Histogram of Object Flux for Entire Image')
+            plt.ylabel('Frequency (N)')
+            plt.xlabel('Object flux')
+            SAVE = True
+            if SAVE:
+                plt.savefig(os.path.join(curr_dir,'Figures','Jul19',varParam,'flux1_flux2_hist_{}{}.png'.format(varParam,varParamRange[k])))
+                plt.close()
+            else:
+                plt.show()
     
-        #-----------------------------------------------------------------------------#
-        # Flux ratio analysis:
-        
-        flux1,flux2 = img1data.get_data('FLUX_BEST'),img2data.get_data('FLUX_BEST')
-        x,y = img1data.get_data('X_IMAGE'),img1data.get_data('Y_IMAGE')
-        
-        flux1,flux2 = np.array(flux1),np.array(flux2)
-        #''' 
-        print ' '
-        print 'Minimum flux values: ', np.min(flux1),' ',np.min(flux2)
-        print 'Minimum pixel values: ', np.min(sex_stats.getPixelValues(testImage1)),' ',np.min(sex_stats.getPixelValues(testImage2))
-        print 'Median value of images: ', np.median(sex_stats.getPixelValues(testImage1)),' ',np.median(sex_stats.getPixelValues(testImage2))
-        print 'Mean value of images: ', np.mean(sex_stats.getPixelValues(testImage1)),' ',np.mean(sex_stats.getPixelValues(testImage2))          
-        print ' '
-        #'''
-        #'''
-        fluxAvg = 0.5*(flux1+flux2)
-        fluxRatio = np.divide(flux1,flux2)
-        fluxRatio_mean = np.mean(fluxRatio)
-        fluxRatio_std = np.std(fluxRatio)
-        fluxRatio_meanSubtracted = fluxRatio - fluxRatio_mean # (NOT MEAN SUBTRACTED)
-        #'''
-        fluxRatio = np.divide(flux1,flux2)
-        
-        maxSig = np.linspace(10.0,1.0,15) # Sigma cutoff values
-        for s in range(len(maxSig)):
+            # Creating histogram of flux1/flux2 (object-wise flux ratio)
+            #plt.hist(fluxRatio,bins=70,range=(-25.0,25.0),color='green') # Range = (-25.0,25.0)
+            plt.hist(fluxRatio,bins=70,range=(np.min(fluxRatio),np.max(fluxRatio)),color='green') 
+            plt.title('Histogram of Object-wise Flux Ratio')
+            plt.ylabel('Frequency (N)')
+            plt.xlabel('Object-wise flux ratio')
+            SAVE = True
+            if SAVE:
+                plt.savefig(os.path.join(curr_dir,'Figures','Jul18Imgs','Hists',varParam,'fluxRatio_hist_{}{}.png'.format(varParam,varParamRange[k])))
+                plt.close()
+            else:
+                plt.show()
             
-            m,n = 8,8
+            # Creating color plot of object-wise flux ratio
+            cmap = matplotlib.cm.jet
+            plt.scatter(x,y,s=25.0*img1data.get_data('A_IMAGE'),c=fluxRatio,marker='o',vmin=np.min(fluxRatio),vmax=np.max(fluxRatio),alpha=0.85)
+            plt.axis([0,1600,0,1600])  
+            plt.colorbar()
+            plt.title('Map of Object-wise Flux Ratio')
+            plt.xlabel('X_IMAGE')
+            plt.ylabel('Y_IMAGE')
+            SAVE = True
+            if SAVE:
+                plt.savefig(os.path.join(curr_dir,'Figures','Jul18Imgs','Hists',varParam,'fluxRatio_map_{}{}.png'.format(varParam,varParamRange[k])))
+                plt.close()
+            else:
+                plt.show()
+            # Creating histogram of object-wise flux ratio for 4x4 bins
+            m,n = 4,4
             xBins,yBins,fluxRatioBins = sex_stats.binData(x,y,fluxRatio,M=m,N=n)
-            
-            fluxRatioBin_Avgs = np.zeros([m,n])
-            emptyBins = []
             for i in range(m):
                 for j in range(n):
-                    # Clipping data in bins:
-                    fluxRatioBins_sigmaClipped = []
-                    for k in range(len(fluxRatioBins[i,j])):
-                        if np.abs((fluxRatioBins[i,j])[k]) <= maxSig[s]*np.std(fluxRatioBins[i,j]):
-                            fluxRatioBins_sigmaClipped.append(fluxRatioBins[i,j][k])
-                    if len(fluxRatioBins_sigmaClipped) == 0:
-                        emptyBins.append('{},{}'.format(str(i),str(j)))
-                    fluxRatioBins[i,j] = fluxRatioBins_sigmaClipped
-                    fluxRatioBin_Avgs[i,j] = np.mean(fluxRatioBins_sigmaClipped)
-            PRINT_emptyBins = False
-            if PRINT_emptyBins and (len(emptyBins) > 0):
-                print 'Warning: empty bins'
-                for i in range(len(emptyBins)):
-                    print '({})'.format(emptyBins[i]),                   
-                    
-            # Masking NaNs in fluxRatioBin_Avgs:
-
-            fluxRatioBin_Avgs_Masked = np.ma.array(fluxRatioBin_Avgs,mask=np.isnan(fluxRatioBin_Avgs))
-            cmap = matplotlib.cm.gray
-            cmap.set_bad('r',1.)
+                    plt.subplot(m,n,(n*i + (j+1)))
+                    plt.hist(fluxRatioBins[i,j],bins=20)
+                    plt.axis([np.min(fluxRatioBins[i,j]),np.max(fluxRatioBins[i,j]),0.0,10.0])
             
-            #print np.nanmean(fluxRatioBin_Avgs)-2.0,' ',np.nanmean(fluxRatioBin_Avgs)+2.0
-            plt.pcolormesh(fluxRatioBin_Avgs_Masked,cmap=cmap,vmin=np.nanmean(fluxRatioBin_Avgs)-2.0,vmax=np.nanmean(fluxRatioBin_Avgs)+2.0)
+            SAVE = True
+            if SAVE:
+                plt.savefig(os.path.join(curr_dir,'Figures','Jul18Imgs','Hists',varParam,'fluxRatioBins_hist_{}{}.png'.format(varParam,varParamRange[k])))
+                plt.close()
+            else:
+                plt.show()
+            
+        '''
+        fluxRatioBin_Avgs = np.zeros([m,n])
+        emptyBins = []
+        for i in range(m):
+            for j in range(n):
+                # Clipping data in bins:
+                fluxRatioBins_sigmaClipped = []
+                fluxRatioBins_excess = []
+                for k in range(len(fluxRatioBins[i,j])):
+                    if np.abs((fluxRatioBins[i,j])[k]) <= maxSig[s]*np.std(fluxRatioBins[i,j]):
+                        fluxRatioBins_sigmaClipped.append(fluxRatioBins[i,j][k])
+                    else:
+                        fluxRatioBins_excess.append()
+                if len(fluxRatioBins_sigmaClipped) == 0:
+                    emptyBins.append('{},{}'.format(str(i),str(j)))
+                fluxRatioBins[i,j] = fluxRatioBins_sigmaClipped
+                fluxRatioBin_Avgs[i,j] = np.mean(fluxRatioBins_sigmaClipped)
+                    
+        # Masking NaNs in fluxRatioBin_Avgs:
+
+        fluxRatioBin_Avgs_Masked = np.ma.array(fluxRatioBin_Avgs,mask=np.isnan(fluxRatioBin_Avgs))
+        cmap = matplotlib.cm.gray
+        cmap.set_bad('r',1.)
+        
+        #print np.nanmean(fluxRatioBin_Avgs)-2.0,' ',np.nanmean(fluxRatioBin_Avgs)+2.0
+        plt.pcolormesh(fluxRatioBin_Avgs_Masked,cmap=cmap,vmin=np.nanmean(fluxRatioBin_Avgs)-2.0,vmax=np.nanmean(fluxRatioBin_Avgs)+2.0)
+        plt.colorbar()
+        plt.xlabel('X Bin')
+        plt.ylabel('Y Bin')
+        plt.title('Flux Ratio Bin Averages: {} x {}'.format(m,n))
+        if not os.path.exists(os.path.join(curr_dir,'Figures','Jul14Imgs','ObjBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]))):
+            os.mkdir(os.path.join(curr_dir,'Figures','Jul14Imgs','ObjBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10])))
+        plt.savefig(os.path.join(curr_dir,'Figures','Jul14Imgs','ObjBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]),'fluxRatioBin_Avgs_sigmaClip{}.png'.format(str(maxSig[s])[0:4])))
+        plt.close()
+        
+        plot = False # Warning: do not change to true unless length of maxSig small
+        if plot:
+            # Plotting source-wise flux ratio w/ colors
+            plt.scatter(x_clip, y_clip, s=25*np.log10(0.1*np.array(fluxAvg_clip)), c=fluxRatio_meanSubtracted_sigmaClipped, vmin=-1.5*maxSig[j]*fluxRatio_std, vmax=1.5*maxSig[j]*fluxRatio_std, alpha=0.75)        
+            plt.axis([0,1600,0,1600])
             plt.colorbar()
-            plt.xlabel('X Bin')
-            plt.ylabel('Y Bin')
-            plt.title('Flux Ratio Bin Averages: {} x {}'.format(m,n))
-            if not os.path.exists(os.path.join(curr_dir,'Figures','Jul14Imgs','ObjBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]))):
-                os.mkdir(os.path.join(curr_dir,'Figures','Jul14Imgs','ObjBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10])))
-            plt.savefig(os.path.join(curr_dir,'Figures','Jul14Imgs','ObjBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]),'fluxRatioBin_Avgs_sigmaClip{}.png'.format(str(maxSig[s])[0:4])))
+            plt.xlabel('X_IMAGE')
+            plt.ylabel('Y_IMAGE')
+            plt.title('Flux Ratio Color Map: sigma cutoff = '+str(maxSig[j])[0:4])
+            plt.savefig((curr_dir+'/Figures/{}_{}_maxSig{}_fluxRatio_LINETEST.png'.format(img_tag1, img_tag2, str(maxSig[j])[0:4])))
             plt.close()
+        #'''
+        break
+    break
 
 
-
+    
 
 """ THIS SECTION OF CODE WAS COMMENTED OUT ON July 12th, 2016; uncomment to do statistical analysis
 
@@ -237,19 +356,3 @@ plt.ylabel('Adjusted r-Squared')
 plt.show()
 '''
 """
-
-
-
-''' # Testing with artificial data: random noise and linear equations with noise
-# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:
-
-#temp = np.std(flux1)*np.random.randn(flux1.size) + np.mean(flux1)
-#flux1 = temp
-#flux1 = np.mean(flux1)*np.ones(flux1.size) + np.random.randn(flux1.size)
-#temp = (np.mean(flux2)/np.mean(flux1))*flux1 + np.std(flux2)*np.random.randn(flux2.size)
-#flux2 = temp
-#flux2 += 10.0*(x + y - np.mean(x) - np.mean(y))
-
-
-# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:# TESTING:
-#'''

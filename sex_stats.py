@@ -70,8 +70,7 @@ class data:
             for i in range(len(self.Data)):
                 Obj = self.Data[i]
                 Line = 'ellipse('+str(Obj['X_IMAGE'])+','+str(Obj['Y_IMAGE'])+','+str(Obj['KRON_RADIUS']*Obj['A_IMAGE'])+','+str(Obj['KRON_RADIUS']*Obj['B_IMAGE'])+','+str(Obj['THETA_IMAGE'])+')\n'
-                g.write(Line)            
-
+                g.write(Line)
 
 def binData(x1,x2,y,M=3,N=3,ImgD1=[0,1600],ImgD2=[0,1600]):
     '''
@@ -169,12 +168,6 @@ def chiSquareNormalized(Obs,Exp,numParams):
     return chiSquareNorm
         
 
-def getPixelValues(image_file):
-    hdulist = fits.open(image_file)
-    data = hdulist[0].data
-    hdulist.close()
-    return data
-
 
 def linReg3D(x1,x2,y):
     # Linear least-squares model fitting for 3D data
@@ -191,5 +184,5 @@ def rSquaredAdjusted(Obs,Exp,numParams):
     rSqAdj = 1.0 - ((1.0 - rSq)*(float(N - 1.0)))/(float(((N - p) - 1.0)))
     return rSqAdj
 
-testImage = 'AstroImages/Good/fpC-6484-x4078-y134_stitched_alignCropped.fits'
-imgDict = binImage(getPixelValues(testImage),M=4,N=4)
+#testImage = 'AstroImages/Good/fpC-6484-x4078-y134_stitched_alignCropped.fits'
+#imgDict = binImage(getPixelValues(testImage),M=4,N=4)

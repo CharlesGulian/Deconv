@@ -64,37 +64,13 @@ def loop(img_dir):
         print ('Running SExtractor on current image: {}').format(imgName)
         call_sex(imgName,config_file='copy.sex')    
   
-def compare(imgName1,imgName2):
+def compare(image_file1,image_file2,config_file1,config_file2):
     
-    fig = sex_config.configure(imgName1+','+imgName1,'default.sex','default.param',dual=True)
-    fig.default_config()
-    fig.write_config_file(new_config_file='copy_compare.sex',new_param_file='copy_compare.param')
-    
-    MASK = True
-    mask_file = os.path.join(curr_dir,'AstroImages','Masks',imgName1.replace('.fits','_mask.fits').replace('AstroImages/Good/',''))    
-    if MASK and os.path.exists(mask_file):        
-        fig.reconfigure('WEIGHT_IMAGE',mask_file)
-        fig.reconfigure('WEIGHT_TYPE','MAP_WEIGHT')
-        #pass
-    fig.write_config_file(new_config_file='copy_compare.sex',new_param_file='copy_compare.param')
-    
-    
-    print('Detecting from {}, measuring from {}').format(imgName1,imgName1)
-    call_sex(imgName1+','+imgName1,config_file='copy_compare.sex')
-    
-    fig = sex_config.configure(imgName1+','+imgName2,'default.sex','default.param',dual=True)
-    fig.default_config()
-    
-    mask_file = os.path.join(curr_dir,'AstroImages','Masks',imgName1.replace('.fits','_mask.fits').replace('AstroImages/Good/',''))
-    if MASK and os.path.exists(mask_file):      
-        fig.reconfigure('WEIGHT_IMAGE',mask_file)
-        fig.reconfigure('WEIGHT_TYPE','MAP_WEIGHT')
-        #pass
-    fig.write_config_file(new_config_file='copy_compare.sex',new_param_file='copy_compare.param')
+    print('Detecting from {}, measuring from {}').format(image_file1,image_file1)
+    call_sex(image_file1+','+image_file1,config_file=config_file1)
 
-    print('Detecting from {}, measuring from {}').format(imgName1,imgName2)
-    call_sex(imgName1+','+imgName2,config_file='copy_compare.sex')
-
+    print('Detecting from {}, measuring from {}').format(image_file1,image_file2)
+    call_sex(image_file1+','+image_file2,config_file=config_file2)
 
 #testImage1 = 'AstroImages/Good/fpC-6484-x4078-y134_stitched_alignCropped.fits'
 #testImage2 = 'AstroImages/Good/fpC-7006-x5226-y115_stitched_alignCropped.fits'

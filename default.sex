@@ -47,7 +47,7 @@ PHOT_PETROPARAMS 2.0,3.5       # MAG_PETRO parameters: <Petrosian_fact>,
 PHOT_AUTOAPERS   0.0,0.0        # <estimation>,<measurement> minimum apertures
                                 # for MAG_AUTO and MAG_PETRO
 
-SATUR_LEVEL      50000.0        # level (in ADUs) at which arises saturation
+SATUR_LEVEL      200000.0        # level (in ADUs) at which arises saturation
 SATUR_KEY        SATURATE       # keyword for saturation level (in ADUs)
  
 MAG_ZEROPOINT    0.0            # magnitude zero-point
@@ -65,7 +65,7 @@ STARNNW_NAME     default.nnw    # Neural-Network_Weight table filename
  
 BACK_TYPE        AUTO           # AUTO or MANUAL
 BACK_VALUE       0.0            # Default background value in MANUAL mode
-BACK_SIZE        64             # Background mesh: <size> or <width>,<height>
+BACK_SIZE        200             # Background mesh: <size> or <width>,<height>
 BACK_FILTERSIZE  3              # Background filter: <size> or <width>,<height>
  
 #------------------------------ Check Image ----------------------------------

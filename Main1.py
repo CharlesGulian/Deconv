@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import pysex
 import sex_stats
+import fits_tools
 import scipy.stats as spst
 #import sex_config
 #import do_config
@@ -36,61 +37,58 @@ badImgs = [badImage1,badImage2,badImage3,badImage4]
 
 for testImage1 in goodImgs:
     for testImage2 in goodImgs:
-        
         if testImage1 == testImage2:
             continue
         
-        # Images to compare 
-        #testImage1 = badImage1
-        #testImage2 = badImage2
-        
-        
-        output = pysex.compare(testImage1,testImage2) # (Implement/uncomment to create new comparison file)
-        
+        # Getting image tags
         img_tag1 = (os.path.split(testImage1)[1])
         img_tag1 = img_tag1[0:len(img_tag1)-len('.fits')]
         img_tag2 = (os.path.split(testImage2)[1])
-        img_tag2 = img_tag2[0:len(img_tag2)-len('.fits')]
+        img_tag2 = img_tag2[0:len(img_tag2)-len('.fits')]        
         
-        outputCat1 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag1+'_compare.cat')
-        if not os.path.exists(outputCat1):
-            print 'Error: first output catalog path does not exist'
+        # Getting mask for masked-image analysis
+        maskFile = testImage1.replace('.fits','_mask.fits').replace('Good','Masks').replace('Bad','Masks')
+        mask = fits_tools.getPixels(maskFile)
         
-        outputCat2 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag2+'_compare.cat')
-        if not os.path.exists(outputCat2):
-            print 'Error: second output catalog path does not exist'
-            
-        # Getting image data (pixel values for testImage1 and testImage2)
-        fluxPixels1,fluxPixels2 = sex_stats.getPixelValues(testImage1),sex_stats.getPixelValues(testImage2)
-        # Correcting for image bias = 1000        
-        pixelBias = 1000
-        fluxPixels1 -= pixelBias
-        fluxPixels2 -= pixelBias
+        # Getting image data for testImage1 and testImage2
+        fluxPixels1,fluxPixels2 = fits_tools.getPixels(testImage1),fits_tools.getPixels(testImage2)
         
+        # Subtracting bias of 1000.0 from each image, applying mask
+        fluxPixels1 = fits_tools.applyMask(fluxPixels1,mask,imageBias=1000.0)
+        fluxPixels2 = fits_tools.applyMask(fluxPixels2,mask,imageBias=1000.0)
+        
+        # Adding bias of 1.0 to allow pixel-wise division after applying binary masks to images (masked images have pixel values = 0.0)        
+        fluxPixels1 += 1.0
+        fluxPixels2 += 1.0
+        
+        # Computing pixel-wise flux ratio
         fluxRatio_pixelWise = np.divide(fluxPixels1,fluxPixels2)
         
+        # Creating bins
         m,n = 128,128
-        fluxRatioBins = sex_stats.binImage(fluxRatio_pixelWise,M=m,N=n)
+        fluxRatioBins = fits_tools.binImage(fluxRatio_pixelWise,M=m,N=n)
         
+        # Averaging bins
         fluxRatioBin_Avgs = np.zeros([m,n])
         for i in range(m):
             for j in range(n):
                 fluxRatioBin_Avgs[i,j] = np.mean(fluxRatioBins[i,j])
         
-        # Masking NaNs in fluxRatioBin_Avgs with red squares
+        # Masking NaNs in fluxRatioBin_Avgs with red squares (never really an issue with pixel-binning)
         fluxRatioBin_Avgs_Masked = np.ma.array(fluxRatioBin_Avgs,mask=np.isnan(fluxRatioBin_Avgs))
         cmap = matplotlib.cm.gray
         cmap.set_bad('r',1.)
         
+        # Plotting and saving
         plt.pcolormesh(fluxRatioBin_Avgs,cmap=cmap,vmin=np.nanmean(fluxRatioBin_Avgs)-7.5*np.nanstd(fluxRatioBin_Avgs),vmax=np.nanmean(fluxRatioBin_Avgs)+7.5*np.nanstd(fluxRatioBin_Avgs))
         plt.colorbar()
         plt.axis([0,m,0,n])
         plt.xlabel('X Bin')
         plt.ylabel('Y Bin')
-        plt.title('Flux Ratio Bin Averages: {} x {}'.format(m,n))
-        if not os.path.exists(os.path.join(curr_dir,'Figures','Jul14Imgs','ImgBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]))):
-                os.mkdir(os.path.join(curr_dir,'Figures','Jul14Imgs','ImgBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10])))
-        plt.savefig(os.path.join(curr_dir,'Figures','Jul14Imgs','ImgBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]),'fluxRatioBin_Avgs_{}x{}.png'.format(m,n)))
+        plt.title('Flux Ratio Bin Averages: Masked {} x {}'.format(m,n))
+        if not os.path.exists(os.path.join(curr_dir,'Figures','Jul15Imgs','ImgBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]))):
+                os.mkdir(os.path.join(curr_dir,'Figures','Jul15Imgs','ImgBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10])))
+        plt.savefig(os.path.join(curr_dir,'Figures','Jul15Imgs','ImgBin','{}_{}'.format(img_tag1[0:10],img_tag2[0:10]),'fluxRatioBin_Avgs_Masked_{}x{}.png'.format(m,n)))
         plt.close()
 
 

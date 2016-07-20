@@ -92,7 +92,6 @@ class configure:
         with open(os.path.join(curr_dir,new_config_file),'w') as c:
             for i,j in self.config_dict.iteritems():
                 c.write(str(i)+' '+str(j)+'\n')
-            c.close()
                 
     def default_config(self):
         
@@ -143,7 +142,17 @@ class configure:
             self.reconfigure('WEIGHT_TYPE','MAP_WEIGHT')
             
         # Adjust detection threshold
-        self.reconfigure('DETECT_THRESH',2.5)
+        self.reconfigure('DETECT_THRESH',2.25)
+        # Adjust aperture diameter-- note, we could also opt to make this a tuple of 2-3 apertures, e.g. (5.0,10.0,15.0)
+        self.reconfigure('PHOT_APERTURES',15.0)
+        # Adjust background mesh size
+        self.reconfigure('BACK_SIZE',220.0)
+        # Adjust PHOT_FLUXFRAC
+        self.reconfigure('PHOT_FLUXFRAC',0.90)
+        
+        self.output_params.append('FLUX_RADIUS')
+        
+        
             
 # NEXT STEPS:
 # 1) Dual image mode options (Done)

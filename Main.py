@@ -25,6 +25,7 @@ goodImage3 = 'AstroImages/Good/fpC-4868-x4211-y138_stitched_alignCropped.fits'
 goodImage4 = 'AstroImages/Good/fpC-6383-x5176-y121_stitched_alignCropped.fits'
 
 goodImgs = [goodImage1,goodImage2,goodImage3,goodImage4]
+goodImgs = [goodImage1,goodImage3]
 
 # Bad image comparison:
 badImage1 = 'AstroImages/Bad/fpC-5759-x24775-y300_stitched_alignCropped.fits' # Modest gradient from top to bottom
@@ -65,23 +66,25 @@ for testImage1 in goodImgs:
         # Do default configuration
         fig2.default_config()
         
-        varParam = 'PhotAper'
+        varParam = 'Filter'
         PhotAper = np.linspace(5.0,25.0,5)
-        varParamRange = PhotAper
+        BackSize = np.linspace(150,350,5)
+        Filter = ['Y','N']
+        varParamRange = Filter
         for k in range(len(varParamRange)):
             # Adjust Kron factor
-            fig1.reconfigure('PHOT_APERTURES',PhotAper[k])
+            fig1.reconfigure('FILTER',Filter[k])
             # Change check image name
-            temp = fig1.config_dict['CHECKIMAGE_NAME'].replace('Results/CheckImages','Figures/Jul18Imgs/Hists/'+varParam).replace('.fits','_{}{}.fits'.format(varParam,varParamRange[k]))
-            fig1.reconfigure('CHECKIMAGE_NAME',temp)
+            #temp = fig1.config_dict['CHECKIMAGE_NAME'].replace('Results/CheckImages','Figures/Jul19/'+varParam).replace('.fits','_{}{}.fits'.format(varParam,varParamRange[k]))
+            #fig1.reconfigure('CHECKIMAGE_NAME',temp)
             # Write new configuration file for first image
             fig1.write_config_file(new_config_file='copy_compare1.sex',new_param_file='copy_compare1.param')
             
             # Adjust Kron factor
-            fig2.reconfigure('PHOT_APERTURES',PhotAper[k])
+            fig2.reconfigure('FILTER',Filter[k])
             # Change check image name
-            temp = fig2.config_dict['CHECKIMAGE_NAME'].replace('Results/CheckImages','Figures/Jul18Imgs/Hists/'+varParam).replace('.fits','_{}{}.fits'.format(varParam,varParamRange[k]))
-            fig2.reconfigure('CHECKIMAGE_NAME',temp)
+            #temp = fig2.config_dict['CHECKIMAGE_NAME'].replace('Results/CheckImages','Figures/Jul19/'+varParam).replace('.fits','_{}{}.fits'.format(varParam,varParamRange[k]))
+            #fig2.reconfigure('CHECKIMAGE_NAME',temp)
             # Write new configuration file for second image
             fig2.write_config_file(new_config_file='copy_compare2.sex',new_param_file='copy_compare2.param')
             
@@ -112,6 +115,8 @@ for testImage1 in goodImgs:
                 img1data.create_regFile()
                 img2data.create_regFile()
         
+        
+        
             #-----------------------------------------------------------------------------#
             # Flux ratio analysis:
             
@@ -131,10 +136,17 @@ for testImage1 in goodImgs:
             #'''
             
             #''' 
-            print ' '
+            print ''
+            print '{} = {}'.format(varParam,varParamRange[k])
+            print ''
+            print 'Number of objects detected: ',len(fluxRatio)
             print 'Minimum flux values: ', np.min(flux1),' ',np.min(flux2)
+            print 'Number of negative flux values: ', len(np.where(flux1 < 0.0)[0]),' ',len(np.where(flux2 < 0.0)[0])
             print 'Mean flux values: ',np.mean(flux1),' ',np.mean(flux2)
+            print ''
             print 'Minimum flux ratio: ', np.min(fluxRatio)
+            print 'Maximum flux ratio: ', np.max(fluxRatio)
+            print 'Standard deviation of flux ratio: ', np.std(fluxRatio)
             print ''
             print 'Minimum values of images: ', np.min(fits_tools.getPixels(testImage1)),' ',np.min(fits_tools.getPixels(testImage2))
             print 'Median values of images: ', np.median(fits_tools.getPixels(testImage1)),' ',np.median(fits_tools.getPixels(testImage2))
@@ -158,20 +170,21 @@ for testImage1 in goodImgs:
     
             # Creating histogram of flux1/flux2 (object-wise flux ratio)
             #plt.hist(fluxRatio,bins=70,range=(-25.0,25.0),color='green') # Range = (-25.0,25.0)
-            plt.hist(fluxRatio,bins=70,range=(np.min(fluxRatio),np.max(fluxRatio)),color='green') 
+            #plt.hist(fluxRatio,bins=int(abs(np.max(fluxRatio)-np.min(fluxRatio))*10.0),range=(np.min(fluxRatio),np.max(fluxRatio)),color='green') 
+            plt.hist(fluxRatio,bins=70,range=(np.min(fluxRatio),np.max(fluxRatio)),color='green')            
             plt.title('Histogram of Object-wise Flux Ratio')
             plt.ylabel('Frequency (N)')
             plt.xlabel('Object-wise flux ratio')
             SAVE = True
             if SAVE:
-                plt.savefig(os.path.join(curr_dir,'Figures','Jul18Imgs','Hists',varParam,'fluxRatio_hist_{}{}.png'.format(varParam,varParamRange[k])))
+                plt.savefig(os.path.join(curr_dir,'Figures','Jul19',varParam,'fluxRatio_hist_{}{}.png'.format(varParam,varParamRange[k])))
                 plt.close()
             else:
                 plt.show()
             
             # Creating color plot of object-wise flux ratio
             cmap = matplotlib.cm.jet
-            plt.scatter(x,y,s=25.0*img1data.get_data('A_IMAGE'),c=fluxRatio,marker='o',vmin=np.min(fluxRatio),vmax=np.max(fluxRatio),alpha=0.85)
+            plt.scatter(x,y,s=25.0*img1data.get_data('A_IMAGE'),c=fluxRatio-np.median(fluxRatio),marker='o',vmin=np.min(fluxRatio),vmax=np.max(fluxRatio),alpha=0.85)
             plt.axis([0,1600,0,1600])  
             plt.colorbar()
             plt.title('Map of Object-wise Flux Ratio')
@@ -179,7 +192,7 @@ for testImage1 in goodImgs:
             plt.ylabel('Y_IMAGE')
             SAVE = True
             if SAVE:
-                plt.savefig(os.path.join(curr_dir,'Figures','Jul18Imgs','Hists',varParam,'fluxRatio_map_{}{}.png'.format(varParam,varParamRange[k])))
+                plt.savefig(os.path.join(curr_dir,'Figures','Jul19',varParam,'fluxRatio_map_{}{}.png'.format(varParam,varParamRange[k])))
                 plt.close()
             else:
                 plt.show()
@@ -189,12 +202,13 @@ for testImage1 in goodImgs:
             for i in range(m):
                 for j in range(n):
                     plt.subplot(m,n,(n*i + (j+1)))
-                    plt.hist(fluxRatioBins[i,j],bins=20)
-                    plt.axis([np.min(fluxRatioBins[i,j]),np.max(fluxRatioBins[i,j]),0.0,10.0])
+                    #plt.hist(fluxRatioBins[i,j],bins=int(abs(np.max(fluxRatio)-np.min(fluxRatio))*10.0))
+                    plt.hist(fluxRatioBins[i,j],bins=70)
+                    plt.axis([np.min(fluxRatioBins[i,j]),np.max(fluxRatioBins[i,j]),0.0,15.0])
             
             SAVE = True
             if SAVE:
-                plt.savefig(os.path.join(curr_dir,'Figures','Jul18Imgs','Hists',varParam,'fluxRatioBins_hist_{}{}.png'.format(varParam,varParamRange[k])))
+                plt.savefig(os.path.join(curr_dir,'Figures','Jul19',varParam,'fluxRatioBins_hist_{}{}.png'.format(varParam,varParamRange[k])))
                 plt.close()
             else:
                 plt.show()

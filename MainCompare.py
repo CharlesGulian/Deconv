@@ -117,9 +117,7 @@ for img1 in comparisonImages:
                 figs[i].reconfigure('DETECT_THRESH',7.0)
                 figs[i].reconfigure('BACK_TYPE','MANUAL')
                 figs[i].reconfigure('BACK_VALUE',0.0)
-                                
-                
-                pass
+                #pass
             
             if img.category == 'Coadded':
                 print ''

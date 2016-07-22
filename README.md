@@ -164,12 +164,39 @@ img2data = sex_stats.data(outputCat2)
 
 * fits_tools.py is a collection of functions that I've written to manipulate .fits images
 * fits_tools.py contains the functions for
-    * Binning images (```imageBinDict()```)
-    * Retrieving .fits image data (```getPixels()```-- note that ```astropy.io.fits.get_data()``` does the same thing)
-    * Masking a .fits image with a .fits binary mask (```maskImage()```)
-    * 
-    * 
-    * 
+    * Binning images: ```binImage()```
+    * Retrieving .fits image data: ```getPixels()```
+        * Note that ```astropy.io.fits.get_data()``` does the same thing as ```getPixels()```
+    * Masking a .fits image with a .fits binary mask: ```maskImage()```
+    * Bias and median subtraction: ```subtractBias()``` and ```subtractMedian()```
+    * Computing the circular-aperture flux of an object: ```computeObjectFlux()```
+* Examples of use:
+``` python
+# Assign .fits image path to image_file variable   
+image_file = 'image_file.fits'
+# Subtract bias of 1000.0 from image_file data, write to new image file
+subtractBias('image_file.fits',new_image_file='image_file_biasSubtracted.fits',bias=1000.0)
+# Reassign new (bias-subtracted) image to image_file variable
+image_file = 'image_file_biasSubtracted.fits'
+
+# Assign .fits binary mask path to mask_file variable
+mask_file = 'mask.fits'
+# Apply .fits binary mask to image_file data, write to new .fits file
+maskImage(image_file,mask_file,new_image_file='image_file_masked.fits')
+# Reassign new (masked) image to image_file variable
+image_file = 'image_file_masked.fits'
+
+imageData = getPixels(image_file.fits)      # Retrieve image data array
+imageBinDict = binImage(imageData,M=4,N=4)  # Bin image into 4x4 bins;  returns bin arrays in a dictionary
+binData = imageBinDict[3,3]                 # Get data from bin in lower right corner of image
+
+# Assuming a sex_stats.data instance exists for image_file's SExtractor output catalog (outputData):
+x,y = outputData.get_data('X_IMAGE'),outputData.get_data('Y_IMAGE')
+radii = outputData.get_data('FLUX_RADIUS')
+# Compute the circular aperture flux for the 26th object in the output catalog
+flux = computeObjectFlux(x[25],y[25],radii[25],imageData)
+```
+
 ## MainCompare.py (continued)
 
 

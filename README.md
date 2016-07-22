@@ -38,7 +38,7 @@ coaddedImage = Image('AstroImages/Coadd/fpC-206-x4684-y126_stitched_alignCropped
 
 ### sex_config.py
 
-* sex_config.py contains a single class: ```configure```:
+* sex_config.py contains a single class, ```configure```:
 ``` python
 class configure:
     

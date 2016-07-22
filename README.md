@@ -29,5 +29,13 @@ class Image:
 goodImage1 = Image('AstroImages/Good/fpC-6484-x4078-y134_stitched_alignCropped.fits','Good','1')
 coaddedImage = Image('AstroImages/Coadd/fpC-206-x4684-y126_stitched_alignCropped-COADD.fits','Coadded','')
 ```
-* ```Image``` class instances are primarily used to save and categorize data analysis results/figures
+* The ```Image``` class instances are primarily used to save and categorize data analysis results/figures
 
+* Next, we define a list of ```Image``` class instances and iterate through it in a nested loop such that every image is paired for comparison with every other image exactly once
+* We perform trivial data cleaning operations; bias subtraction, median subtraction
+    * The ```Image.category``` method can be used to selectively perform operations on certain categories of images; for example, we only subtract a bias from "Good" images
+* In the next part of the comparison loop, we use sex_config.py to write custom SExtractor configuration files for each image
+
+## sex_config.py
+
+* Well,

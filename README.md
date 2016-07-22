@@ -8,7 +8,6 @@ This tutorial demonstrates the functions of the following scripts in this reposi
 - pysex.py
 - fits_tools.py
 
-
 ### MainCompare.py
 
 * This is the "main comparison" script, i.e. where the actual image comparisons get done, and where the resulting data is collected and analyzed
@@ -37,7 +36,7 @@ coaddedImage = Image('AstroImages/Coadd/fpC-206-x4684-y126_stitched_alignCropped
     * The ```Image.category``` method can be used to selectively perform operations on certain categories of images; for example, we only subtract a bias from "Good" images
 * In the next part of the comparison loop, we use sex_config.py to write custom SExtractor configuration files for each image
 
-## sex_config.py
+### sex_config.py
 
 * sex_config.py contains a single class: ```configure```:
 ``` python
@@ -75,7 +74,7 @@ fig = sex_config.configure(image_file1.fits+','+image_file2.fits,config_file.sex
 
 * After executing ```fig.default()``` in MainCompare.py, we use the the ```configure.write_configfile``` method to write new configuration and output parameter files
 
-## pysex.py
+### pysex.py
 
 * pysex.py is a simple SExtractor wrapper that uses Python's ```subprocess``` module to call SExtractor via the command line
 ``` python
@@ -125,7 +124,7 @@ def call_sex(imgName,config_file=None,args_ext=[]):
 ```
 * This generates two SExtractor output catalogs containing information on the detected sources' positions, shapes, and brightnesses
 
-## sex_stats.py
+### sex_stats.py
 
 * sex_stats.py contains a class called ```data```, which is used to extract and organize data from SExtractor output catalogs
 * It is initialized as follows
@@ -160,7 +159,7 @@ img1data = sex_stats.data(outputCat1)
 img2data = sex_stats.data(outputCat2)
 ```
 
-## fits_tools.py
+### fits_tools.py
 
 * fits_tools.py is a collection of functions that I've written to manipulate .fits images
 * fits_tools.py comprises the following functions
@@ -198,6 +197,19 @@ i = 25
 flux = computeObjectFlux(x[i],y[i],radii[i],imageData)
 ```
 
-## MainCompare.py (continued)
+### MainCompare.py (continued)
 
+* The rest of MainCompare.py focuses on analyzing the flux ratios of detected sources
+    * Note that the order/number of detected objects in the output catalogs will be the same for both comparison images, as the first image is used as the "detection image" for both calls to ```pysex.compare()```
+* We retrieve data on the (x,y) coordinates and half-light radii of all detected sources and therefrom compute the sources' circular-aperture fluxes with ```fits_tools.computeObjectFlux()```
+``` python
+# Computing circular-aperture fluxes
+flux1,flux2 = np.zeros(np.shape(x)),np.zeros(np.shape(x))
+for i in range(len(x)):
+    flux1[i] = fits_tools.computeObjectFlux(x[i],y[i],rads[i],imageData1)
+    flux2[i] = fits_tools.computeObjectFlux(x[i],y[i],rads[i],imageData2)
 
+# Compute object-wise flux ratio
+fluxRatio = np.divide(flux1,flux2)
+```
+* We compute and print several statistics from the image data and output catalog data, and then create/save a number of figures and histogram to analyze the flux ratio data

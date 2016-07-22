@@ -64,9 +64,23 @@ class configure:
 ``` python
 fig = sex_config.configure(image_file.fits,config_file.sex,param_file.param)
 ```
-or, in dual image mode
+or, in dual image mode, we write the image file as two image files separated by a comma
 ``` python
 fig = sex_config.configure(image_file1.fits+','+image_file2.fits,config_file.sex,param_file.param,dual=True)
 ```
 * In MainCompare.py, we create two instances of ```configure``` (```fig1``` and ```fig2```) in dual image mode, such that we compare image_file1 with itself, and then with image_file2
-* To save space, most of the "default" configuration 
+* The ```configure``` class has a method called ```reconfigure```, which takes the name of a configuration parameter and its value as input (e.g. ```fig.reconfigure('BACK_TYPE','MANUAL')```
+    * Internally, the ```configure``` class stores and edits the value/state of every configuration parameter and output catalog parameter in two separate dictionaries
+* To save space, most of the basic configuring is handled in the ```configure.default()``` method, but parameter values can still be changed from MainCompare.py (perhaps in an iterative fashion) 
+
+* After executing ```fig.default()``` in MainCompare.py, we use the the ```configure.write_configfile``` method to write new configuration and output parameter files
+
+## pysex.py
+
+* pysex.py is a simple SExtractor wrapper that uses Python's ```subprocess``` module to call SExtractor via the command line
+* The ```compare()``` function compares two images using their respective configuration files, as in MainCompare.py:
+``` python
+ pysex.compare(image1,image2,'copy_compare1.sex','copy_compare2.sex')
+```
+ 
+

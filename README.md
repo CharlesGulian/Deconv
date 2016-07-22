@@ -3,10 +3,11 @@
 This tutorial demonstrates the functions of the following scripts in this repository:
 
 - MainCompare.py
-- sex_stats.py
 - sex_config.py
-- fits_tools.py
+- sex_stats.py
 - pysex.py
+- fits_tools.py
+
 
 ### MainCompare.py
 
@@ -39,7 +40,7 @@ coaddedImage = Image('AstroImages/Coadd/fpC-206-x4684-y126_stitched_alignCropped
 ## sex_config.py
 
 * sex_config.py solely contains one class: ```configure```:
-''' python
+``` python
 class configure:
     
     default_params = []
@@ -59,3 +60,13 @@ class configure:
             ...
             ...
 ```
+* The class is initiated as follows
+``` python
+fig = sex_config.configure(image_file.fits,config_file.sex,param_file.param)
+```
+or, in dual image mode
+``` python
+fig = sex_config.configure(image_file1.fits+','+image_file2.fits,config_file.sex,param_file.param,dual=True)
+```
+* In MainCompare.py, we create two instances of ```configure``` (```fig1``` and ```fig2```) in dual image mode, such that we compare image_file1 with itself, and then with image_file2
+* To save space, most of the "default" configuration 

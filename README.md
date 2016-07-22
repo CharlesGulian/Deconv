@@ -78,9 +78,48 @@ fig = sex_config.configure(image_file1.fits+','+image_file2.fits,config_file.sex
 ## pysex.py
 
 * pysex.py is a simple SExtractor wrapper that uses Python's ```subprocess``` module to call SExtractor via the command line
-* The ```compare()``` function compares two images using their respective configuration files, as in MainCompare.py:
+``` python
+sex_path = '/usr/local/bin/sex'
+curr_dir = os.getcwd()
+
+# All image filenames must be absolute paths or relative to current working directory
+
+def _call(args):
+    try:
+        subprocess.call(args,shell=False)
+    except subprocess.CalledProcessError:
+        print 'Error: sex_call CalledProcessError'
+        pass # Handle errors in the called executable
+    except OSError:
+        print 'Error: OSError'
+        pass # Executable not found
+
+def call_sex(imgName,config_file=None,args_ext=[]):
+    # Call SExtractor from Python script
+    
+    args = [sex_path,imgName]
+    
+    if not os.path.exists(imgName):
+        if os.path.exists(os.path.abspath(imgName)):
+            imgName = os.path.abspath(imgName)
+        else:
+            imgName = os.path.join(curr_dir,imgName)
+        args[1] = imgName
+        
+    if config_file != None:
+        if not os.path.exists(config_file):
+            config_file = os.path.join(curr_dir,config_file)
+        args.extend(['-c',config_file])
+        
+    args.extend(args_ext)
+    _call(args)
+```
+*  ```compare()``` runs SExtractor in dual image mode for two images using their respective configuration files, as in MainCompare.py:
 ``` python
  pysex.compare(image1,image2,'copy_compare1.sex','copy_compare2.sex')
 ```
- 
+* This generates two SExtractor output catalogs containing information on the detected sources' positions, shapes, and brightnesses
 
+## sex_stats.py
+
+* [Add more]

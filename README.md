@@ -39,7 +39,7 @@ coaddedImage = Image('AstroImages/Coadd/fpC-206-x4684-y126_stitched_alignCropped
 
 ## sex_config.py
 
-* sex_config.py solely contains one class: ```configure```:
+* sex_config.py contains a single class: ```configure```:
 ``` python
 class configure:
     
@@ -79,6 +79,9 @@ fig = sex_config.configure(image_file1.fits+','+image_file2.fits,config_file.sex
 
 * pysex.py is a simple SExtractor wrapper that uses Python's ```subprocess``` module to call SExtractor via the command line
 ``` python
+import os
+import subprocess
+
 sex_path = '/usr/local/bin/sex'
 curr_dir = os.getcwd()
 
@@ -122,4 +125,5 @@ def call_sex(imgName,config_file=None,args_ext=[]):
 
 ## sex_stats.py
 
-* [Add more]
+* sex_stats.py contains a class called ```data```, which is used to extract and organize data from SExtractor output catalogs
+* It also contains functions to bin image/array data (```binImage()```) and scattered 3-D data (```binData()```), as well as a graveyard for the statistics functions I wrote

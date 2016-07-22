@@ -38,4 +38,24 @@ coaddedImage = Image('AstroImages/Coadd/fpC-206-x4684-y126_stitched_alignCropped
 
 ## sex_config.py
 
-* Well,
+* sex_config.py solely contains one class: ```configure```:
+''' python
+class configure:
+    
+    default_params = []
+    def __init__(self,image_file,config_file,param_file,dual=False,default_params=default_params):
+            
+            self.config_file,self.param_file = config_file,param_file
+            self.dual = dual
+            
+            if self.dual:
+                print 'Configuring SExtractor for dual image mode'
+                self.image_file1,self.image_file2 = (image_file).split(',')
+            else:
+                self.image_file = image_file
+                    
+            self.config_dict = {}
+            self.param_dict = {}
+            ...
+            ...
+```

@@ -203,7 +203,7 @@ for testImage1 in goodImgs:
             plt.title('Histogram of 9/10-light radii')
             plt.xlabel('9/10-light radius')
             plt.ylabel('Frequency (N)')
-            plt.savefig(os.path.join(curr_dir,'Figures','Jul20','hist_flux_radius0.90.png'))
+            plt.savefig(os.path.join(new_dir,'hist_flux_radius0.90.png'))
             plt.close()
             
             # Creating color plot of object-wise flux ratio

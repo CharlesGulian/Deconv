@@ -21,9 +21,13 @@ class data:
         with open(outputCatName) as f:
             f = open(outputCatName)
             lines = f.readlines()
+            #print lines
             cat_hdr_size = len(lines[len(lines)-1].split()) # Catalog header size; number of output columns in default.param
             f.seek(0) # Reset pointer to start of file
             lines = None
+
+            print ''
+            print cat_hdr_size
             
             params = []
             PRINT = False
@@ -186,3 +190,6 @@ def rSquaredAdjusted(Obs,Exp,numParams):
 
 #testImage = 'AstroImages/Good/fpC-6484-x4078-y134_stitched_alignCropped.fits'
 #imgDict = binImage(getPixelValues(testImage),M=4,N=4)
+
+#testCat = '/Users/annepstein/Work/Deconv/Results/G_S82_outerItr2_test7_Robust16_1.25FilteredUpdate_0.01PSFTresh_1.0Blur_noSR_150pxMask_wobgEst_blurPSF0.2_psfSize200_noSR_G_S82_outerItr2_test7_Robust16_1.25FilteredUpdate_0.01PSFTresh_1.0Blur_noSR_150pxMask_wobgEst_blurPSF0.2_psfSize200_noSR_compare.cat'
+#testData = data(testCat)

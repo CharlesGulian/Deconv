@@ -163,7 +163,7 @@ img2data = sex_stats.data(outputCat2)
 ## fits_tools.py
 
 * fits_tools.py is a collection of functions that I've written to manipulate .fits images
-* fits_tools.py contains functions for
+* fits_tools.py comprises the following functions
     * Binning images: ```binImage()```
     * Retrieving .fits image data: ```getPixels()```
         * Note that ```astropy.io.fits.get_data()``` does the same thing as ```getPixels()```
@@ -187,14 +187,15 @@ maskImage(image_file,mask_file,new_image_file='image_file_masked.fits')
 image_file = 'image_file_masked.fits'
 
 imageData = getPixels(image_file.fits)      # Retrieve image data array
-imageBinDict = binImage(imageData,M=4,N=4)  # Bin image into 4x4 bins;  returns bin arrays in a dictionary
-binData = imageBinDict[3,3]                 # Get data from bin in lower right corner of image
+imageBinDict = binImage(imageData,M=4,N=4)  # Bin image into 4x4 bins
+lowerRight_data = imageBinDict[3,3]                 # Get data from bin in lower right corner of image
 
 # Assuming a sex_stats.data instance exists for image_file's SExtractor output catalog (outputData):
 x,y = outputData.get_data('X_IMAGE'),outputData.get_data('Y_IMAGE')
 radii = outputData.get_data('FLUX_RADIUS')
 # Compute the circular aperture flux for the 26th object in the output catalog
-flux = computeObjectFlux(x[25],y[25],radii[25],imageData)
+i = 25
+flux = computeObjectFlux(x[i],y[i],radii[i],imageData)
 ```
 
 ## MainCompare.py (continued)

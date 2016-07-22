@@ -161,8 +161,13 @@ img2data = sex_stats.data(outputCat2)
 ## fits_tools.py
 
 * fits_tools.py is a collection of functions that I've written to manipulate .fits images
-* 
-
+* fits_tools.py contains functions for
+    * Binning images (```imageBinDict()```)
+    * Retrieving .fits image data (```getPixels()```-- note that ```astropy.io.fits.get_data()``` does the same thing)
+    * Masking a .fits image with a .fits binary mask (```maskImage()```)
+    * 
+    * 
+    * 
 ## MainCompare.py (continued)
 
 

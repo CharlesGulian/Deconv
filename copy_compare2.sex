@@ -1,4 +1,4 @@
-CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/CheckImages/G_S82_outerItr2_test7_Robust16_1.25FilteredUpdate_0.01PSFTresh_1.0Blur_noSR_150pxMask_wobgEst_blurPSF0.2_psfSize200_noSR_fpC-206-x4684-y126_stitched_alignCropped-COADD_compare_APERTURES.fits
+CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/CheckImages/deconv_trimmed_fpC-7006-x5226-y115_stitched_alignCropped_biasSub_compare_APERTURES.fits
 PARAMETERS_NAME /Users/annepstein/Work/Deconv/copy_compare2.param
 ANALYSIS_THRESH 1.5
 SATUR_KEY SATURATE
@@ -17,7 +17,7 @@ PHOT_FLUXFRAC 0.9
 BACK_TYPE AUTO
 ASSOC_PARAMS 2,3,4
 DEBLEND_MINCONT 0.005
-CATALOG_NAME /Users/annepstein/Work/Deconv/Results/G_S82_outerItr2_test7_Robust16_1.25FilteredUpdate_0.01PSFTresh_1.0Blur_noSR_150pxMask_wobgEst_blurPSF0.2_psfSize200_noSR_fpC-206-x4684-y126_stitched_alignCropped-COADD_compare.cat
+CATALOG_NAME /Users/annepstein/Work/Deconv/Results/deconv_trimmed_fpC-7006-x5226-y115_stitched_alignCropped_biasSub_compare.cat
 FLAG_IMAGE flag.fits
 DETECT_THRESH 3.0
 CATALOG_TYPE ASCII_HEAD

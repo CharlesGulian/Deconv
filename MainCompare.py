@@ -43,18 +43,21 @@ badImage4 = Image('AstroImages/Bad/fpC-7140-x24755-y270_stitched_alignCropped.fi
 coaddedImage = Image('AstroImages/Coadd/fpC-206-x4684-y126_stitched_alignCropped-COADD.fits','Coadded','')
 
 # Deconvolved image
-deconvolvedImage = Image('AstroImages/Deconvolved/G_S82_outerItr2_test7_Robust16_1.25FilteredUpdate_0.01PSFTresh_1.0Blur_noSR_150pxMask_wobgEst_blurPSF0.2_psfSize200_noSR.fits','Deconvolved','')
+deconvolvedImage = Image('AstroImages/Deconvolved/deconv.fits','Deconvolved','')
 # Trimming deconvolved image to 1600x1600
 deconvolvedImageData = fits_tools.getPixels(deconvolvedImage.filename)
-padSize = np.array(list(np.shape(deconvolvedImageData))) - np.array([1600,1600])
-deconvolvedImageData_trimmed = deconvolvedImageData[padSize[0]/2:np.shape(deconvolvedImageData)[0]-padSize[0]/2,
-                                                    padSize[1]/2:np.shape(deconvolvedImageData)[1]-padSize[1]/2]
-temp = deconvolvedImage.filename
-fits.writeto(temp,deconvolvedImageData_trimmed,fits.getheader(deconvolvedImage.filename),clobber=True)
-
+TRIM = True
+if (np.shape(deconvolvedImageData) != (1600,1600)) and TRIM:
+    print 'Trimming deconvolved image'
+    padSize = np.array(list(np.shape(deconvolvedImageData))) - np.array([1600,1600])
+    deconvolvedImageData_trimmed = deconvolvedImageData[padSize[0]/2:np.shape(deconvolvedImageData)[0]-padSize[0]/2,
+                                                        padSize[1]/2:np.shape(deconvolvedImageData)[1]-padSize[1]/2]
+    temp = (deconvolvedImage.filename).replace('.fits','_trimmed.fits')
+    fits.writeto(temp,deconvolvedImageData_trimmed,fits.getheader(deconvolvedImage.filename),clobber=True)
+    deconvolvedImage = Image(temp,'Deconvolved','')
 # ===============================================================================
 # List of images to be compared: 
-comparisonImages = [coaddedImage,deconvolvedImage,goodImage2,goodImage3]
+comparisonImages = [deconvolvedImage,coaddedImage,goodImage2,goodImage3]
 
 for img1 in comparisonImages:
     for img2 in comparisonImages:
@@ -88,6 +91,7 @@ for img1 in comparisonImages:
             image2_biasSub = image2.replace('.fits','_biasSub.fits')
             fits_tools.subtractBias(image2,new_image_file=image2_biasSub,bias=1000.0)            
             image2 = image2_biasSub
+            
         
         # =======================================================================
         # Write configuration files for SExtractor comparison
@@ -102,14 +106,40 @@ for img1 in comparisonImages:
         # Do default configuration
         fig2.default_config()
         
+        imgs = [img1,img2]
+        figs = [fig1,fig2]
+        for i,img in enumerate(imgs):
+            if img.category == 'Deconvolved':
+                print ''
+                print 'Reconfiguring deconvolved image: DETECT_THRESH = 7.0'
+                print 'Turning off background estimation/subtraction'
+                print ''
+                figs[i].reconfigure('DETECT_THRESH',7.0)
+                figs[i].reconfigure('BACK_TYPE','MANUAL')
+                figs[i].reconfigure('BACK_VALUE',0.0)
+                                
+                
+                pass
+            
+            if img.category == 'Coadded':
+                print ''
+                print 'Subtracting median from co-added image: median = {0}'.format(np.median(fits_tools.getPixels(img.filename)))
+                print ''
+                temp = (img.filename).replace('.fits','_medSub.fits')
+                fits_tools.subtractMedian(img.filename,new_image_file=temp)
+                img = Image(temp,'Coadded','')
+        
         fig1.write_config_file(new_config_file='copy_compare1.sex',new_param_file='copy_compare1.param')
         fig2.write_config_file(new_config_file='copy_compare2.sex',new_param_file='copy_compare2.param')
         
         # =======================================================================
         # Compare images in SExtractor
+        
         pysex.compare(image1,image2,'copy_compare1.sex','copy_compare2.sex')
         
         # =======================================================================
+        # Retrieve data from output catalogs        
+        
         # Get image tags
         img_tag1 = (os.path.split(image1)[1])
         img_tag1 = img_tag1[0:len(img_tag1)-len('.fits')]
@@ -124,8 +154,6 @@ for img1 in comparisonImages:
         if not os.path.exists(outputCat2):
             print 'Error: second output catalog path does not exist'
         
-        
-        print outputCat1
         # Create sex_stats.data objects:
         img1data = sex_stats.data(outputCat1)
         img2data = sex_stats.data(outputCat2)
@@ -137,14 +165,14 @@ for img1 in comparisonImages:
             img2data.create_regFile()
     
     
-        #-----------------------------------------------------------------------------#
+        # =======================================================================
         # Flux ratio analysis:
         
         # Getting object positions, 0.90-light radii, and image data (pixels)
         x,y = img1data.get_data('X_IMAGE'),img1data.get_data('Y_IMAGE')
-        # Handling negative radii (which result from noisy detection or measurement images, accroding to Emmanuel Bertin, creator of SExtractor)
         rads1 = img1data.get_data('FLUX_RADIUS')
         rads2 = img2data.get_data('FLUX_RADIUS')
+        # Handling negative radii (which result from noisy detection or measurement images, accroding to Emmanuel Bertin, creator of SExtractor)
         neg_inds1 = np.where(rads1 < 0.0)[0] # Where rads1 is negative
         neg_inds2 = np.where(rads2 < 0.0)[0] # Where rads2 is negative
         neg_inds = np.intersect1d(neg_inds1,neg_inds2) # Where both arrays are negative
@@ -161,13 +189,15 @@ for img1 in comparisonImages:
             print ''
             print 'Warning: negative pixel values in first image'
             print 'Subtracting minimum value of image from pixel array'
+            print 'Number of negative pixels: ', len(np.where(imageData1 < 0.0)[0])
             print 'Minimum pixel value: {} -> {}'.format(np.min(imageData1),0.0)
             imageData1 -= np.min(imageData1)
         if len(np.where(imageData2 < 0.0)[0]) > 0:
             print ''
             print 'Warning: negative pixel values in second image'
             print 'Subtracting minimum value of image from pixel array'
-            print 'Minimum pixel value: {} -> {}'.format(np.min(imageData2),0.0)            
+            print 'Number of negative pixels: ', len(np.where(imageData2 < 0.0)[0])
+            print 'Minimum pixel value: {} -> {}'.format(np.min(imageData2),0.0)  
             imageData2 -= np.min(imageData2)
         # Computing circular-aperture fluxes
         flux1,flux2 = np.zeros(np.shape(x)),np.zeros(np.shape(x))

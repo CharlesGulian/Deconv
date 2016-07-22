@@ -25,9 +25,6 @@ class data:
             cat_hdr_size = len(lines[len(lines)-1].split()) # Catalog header size; number of output columns in default.param
             f.seek(0) # Reset pointer to start of file
             lines = None
-
-            print ''
-            print cat_hdr_size
             
             params = []
             PRINT = False

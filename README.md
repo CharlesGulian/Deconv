@@ -1,4 +1,4 @@
-# Deconvolution Project Script Tutorial
+# Deconvolution Project: Python Script Tutorial
 
 This tutorial demonstrates the functions of the following scripts in this repository:
 
@@ -136,5 +136,33 @@ flux_radius_array = imageData.get_data('FLUX_RADIUS')
 ```
 * sex_stats.py also contains functions to bin image/array data (```binImage()```) and scattered 3-D data (```binData()```), as well as a graveyard for the statistics functions I wrote
 
-* In MainCompare.py, 
+* In MainCompare.py, we use the ```sex_stats.data``` class to retrieve and analyze information about sources detected via SExtractor
+``` python
+ # Get image "tags" (filenames without filetype extensions)
+img_tag1 = os.path.split(image1)[1]
+img_tag1 = img_tag1[0:len(img_tag1)-len('.fits')]
+img_tag2 = os.path.split(image2)[1]
+img_tag2 = img_tag2[0:len(img_tag2)-len('.fits')]
+
+# Get first output catalog filename
+outputCat1 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag1+'_compare.cat')
+if not os.path.exists(outputCat1):
+    print 'Error: first output catalog path does not exist'
+# Get second output catalog filename
+outputCat2 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag2+'_compare.cat')
+if not os.path.exists(outputCat2):
+    print 'Error: second output catalog path does not exist'
+
+# Create sex_stats.data objects:
+img1data = sex_stats.data(outputCat1)
+img2data = sex_stats.data(outputCat2)
+```
+
+## fits_tools.py
+
+* fits_tools.py is a collection of functions that I've written to manipulate .fits images
+* 
+
+## MainCompare.py (continued)
+
 

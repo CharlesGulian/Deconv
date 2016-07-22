@@ -213,3 +213,4 @@ for i in range(len(x)):
 fluxRatio = np.divide(flux1,flux2)
 ```
 * We compute and print several statistics from the image data and output catalog data, and then create/save a number of figures and histogram to analyze the flux ratio data
+    * These include a histogram of object fluxes from each image, a histogram of flux ratios, a figure containing MxN histograms of flux ratios (one corresponding to each bin), a color-grid representing the mean flux ratio of each bin, a colored scatter plot of flux ratios (one for each object), and a histogram of half-light radii

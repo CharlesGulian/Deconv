@@ -126,4 +126,15 @@ def call_sex(imgName,config_file=None,args_ext=[]):
 ## sex_stats.py
 
 * sex_stats.py contains a class called ```data```, which is used to extract and organize data from SExtractor output catalogs
-* It also contains functions to bin image/array data (```binImage()```) and scattered 3-D data (```binData()```), as well as a graveyard for the statistics functions I wrote
+* It is initialized as follows
+```
+imageData = sex_stats.data(output_catalog.cat)
+```
+* The ```data``` class has a method called ```get_data()```, which takes a SExtractor output parameter name as input and returns the corresponding column of the output catalog as a NumPy array; e.g.
+``` python
+flux_radius_array = imageData.get_data('FLUX_RADIUS')
+```
+* sex_stats.py also contains functions to bin image/array data (```binImage()```) and scattered 3-D data (```binData()```), as well as a graveyard for the statistics functions I wrote
+
+* In MainCompare.py, 
+

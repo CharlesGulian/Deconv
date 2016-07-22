@@ -170,7 +170,7 @@ img2data = sex_stats.data(outputCat2)
     * Masking a .fits image with a .fits binary mask: ```maskImage()```
     * Bias and median subtraction: ```subtractBias()``` and ```subtractMedian()```
     * Computing the circular-aperture flux of an object: ```computeObjectFlux()```
-* Examples of use:
+* E.g.:
 ``` python
 # Assign .fits image path to image_file variable   
 image_file = 'image_file.fits'

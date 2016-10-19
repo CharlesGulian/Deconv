@@ -11,7 +11,7 @@ Created on Tue Oct 18 16:29:44 2016
 # pixel of the corresponding pixels of each image in the list
 
 import os
-os.chdir('/Users/annepstein/Work/Deconv')
+os.chdir('/home/cgulian2/Deconv')
 curr_dir = os.getcwd()
 import glob
 import numpy as np
@@ -122,6 +122,8 @@ for i in range(M):
         coadd_image[indices[0]:indices[1],indices[2]:indices[3]] = coadd_bin
 
 print coadd_image
-coadd_image_file = os.path.join(curr_dir,'AstroImages','Good','custom_coadd.fits')
+coadd_image_file = os.path.join(curr_dir,'AstroImages','Coadd','custom_coadd.fits')
 fits.writeto(coadd_image_file,coadd_image,clobber=True)
-        
+
+
+

@@ -8,17 +8,19 @@ import os
 curr_dir = os.getcwd()
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib
+
+from matplotlib import cm
 from astropy.io import fits
 
 import pysex
 import sex_stats
 import sex_config
 import fits_tools
+from SciPyKDE import kde_scipy
+
 
 # Image deconvolution project:
 # Main script for data analysis, image comparison, photometric statistics, and more
-
 
 class Image:
     
@@ -55,33 +57,39 @@ if (np.shape(deconvolvedImageData) != (1600,1600)) and TRIM:
     temp = (deconvolvedImage.filename).replace('.fits','_trimmed.fits')
     fits.writeto(temp,deconvolvedImageData_trimmed,fits.getheader(deconvolvedImage.filename),clobber=True)
     deconvolvedImage = Image(temp,'Deconvolved','')
+    
 # ===============================================================================
 # List of images to be compared: 
-comparisonImages = [deconvolvedImage,coaddedImage,goodImage2,goodImage3]
+comparisonImages = [coaddedImage,deconvolvedImage]
 
+# ===============================================================================
+# Image comparisons:
 for img1 in comparisonImages:
     for img2 in comparisonImages:
         if img1 == img2:
-            continue        
+            continue
+        if img1.category == 'Deconvolved':
+            continue
         
+        print '\nDetection image: {}\nMeasurement image: {}\n'.format(img1.filename,img2.filename)
+        
+        # ===============================================================================
         # Make directory to save results and figures to different comparison categories (Good vs. Good, Good vs. Deconvolved, etc.)
         image1,image2 = img1.filename,img2.filename # Get image filenames
-        new_dir = os.path.join(curr_dir,'Figures','Jul21',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
+        new_dir = os.path.join(curr_dir,'Figures','Oct12',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
         if not os.path.exists(new_dir):
             os.mkdir(os.path.join(new_dir))
-        
-        # Set medSub = True to subtract median from each comparison image
-        medSub = False
-        if medSub:
-            image1_medSub = image1.replace('.fits','_medSub.fits')
-            image2_medSub = image2.replace('.fits','_medSub.fits')
             
-            fits_tools.subtractMedian(image1,new_image_file=image1_medSub)
-            fits_tools.subtractMedian(image2,new_image_file=image2_medSub)
+        # ===============================================================================
+        # Adjust image data for optimal comparison via SExtractor    
             
-            image1 = image1_medSub
-            image2 = image2_medSub
-        
+        imgs = [img1,img2]
+        for i,img in enumerate(imgs):
+            if img.category == 'Good':
+                temp = img1.filename.replace('.fits','_biasSub.fits')
+                fits_tools.subtractBias(img1.filename,new_image_file=temp,bias=1000.0)
+                img1.filename = temp
+
         # Subtract bias of 1000.0 from "Good" images
         if img1.category == 'Good':
             image1_biasSub = image1.replace('.fits','_biasSub.fits')
@@ -91,33 +99,58 @@ for img1 in comparisonImages:
             image2_biasSub = image2.replace('.fits','_biasSub.fits')
             fits_tools.subtractBias(image2,new_image_file=image2_biasSub,bias=1000.0)            
             image2 = image2_biasSub
-            
+        
+        # =======================================================================          
+        # Re-align images
+        header1 = fits.getheader(img1.filename)
+        header2 = fits.getheader(img2.filename)
+        
+        x_offset1,y_offset1 = header1['x_offset'],header1['y_offset']
+        x_offset2,y_offset2 = header2['x_offset'],header2['y_offset']
+        
+        del_x = x_offset2 - x_offset1
+        del_y = y_offset2 - y_offset1
+        
+        # Shift second image to align with first image        
+        shifted_image2_data = fits_tools.shift_image(fits.getdata(image2),del_x,del_y)
+        
+        # New image file names:
+        new_image1 = os.path.join(new_dir,img1.category+img1.ID+'_copy'+'.fits')
+        new_image2 = os.path.join(new_dir,img2.category+img2.ID+'_shifted'+'.fits')
+        
+        fits.writeto(new_image1,fits.getdata(image1),header=fits.getheader(image1),clobber=True)
+        fits.writeto(new_image2,shifted_image2_data,header=fits.getheader(image2),clobber=True)
+        
+        image1,image2 = new_image1,new_image2
         
         # =======================================================================
         # Write configuration files for SExtractor comparison
         
         # Writing configuration file for first image
         fig1 = sex_config.configure(image1+','+image1,'default.sex','default.param',dual=True)
-        # Do default configuration        
+        # Do default configuration
         fig1.default_config()
         
-        # Writing onfiguration file for second image
+        # Writing configuration file for second image
         fig2 = sex_config.configure(image1+','+image2,'default.sex','default.param',dual=True)
         # Do default configuration
         fig2.default_config()
+        
+        # =======================================================================
+        # Reconfigure parameters
         
         imgs = [img1,img2]
         figs = [fig1,fig2]
         for i,img in enumerate(imgs):
             if img.category == 'Deconvolved':
-                print ''
-                print 'Reconfiguring deconvolved image: DETECT_THRESH = 7.0'
-                print 'Turning off background estimation/subtraction'
-                print ''
-                figs[i].reconfigure('DETECT_THRESH',7.0)
+                figs[i].reconfigure('THRESH_TYPE','ABSOLUTE')
+                figs[i].reconfigure('DETECT_THRESH',15.0)
                 figs[i].reconfigure('BACK_TYPE','MANUAL')
                 figs[i].reconfigure('BACK_VALUE',0.0)
-                #pass
+                print ''
+                print 'Setting detection threshold = {0}'.format(figs[i].config_dict['DETECT_THRESH'])
+                print 'Turning off background estimation/subtraction'
+                print ''
             
             if img.category == 'Coadded':
                 print ''
@@ -126,6 +159,8 @@ for img1 in comparisonImages:
                 temp = (img.filename).replace('.fits','_medSub.fits')
                 fits_tools.subtractMedian(img.filename,new_image_file=temp)
                 img = Image(temp,'Coadded','')
+                
+                figs[i].reconfigure('DETECT_THRESH',30.0)
         
         fig1.write_config_file(new_config_file='copy_compare1.sex',new_param_file='copy_compare1.param')
         fig2.write_config_file(new_config_file='copy_compare2.sex',new_param_file='copy_compare2.param')
@@ -156,12 +191,16 @@ for img1 in comparisonImages:
         img1data = sex_stats.data(outputCat1)
         img2data = sex_stats.data(outputCat2)
         
+        # Printing background detection threshold:
+        
+        threshold = img1data.get_data('THRESHOLD')
+        print 'Background detection threshold: ', threshold
+        
         # Create .reg files from output catalogs
-        CREATE_regFiles = False
+        CREATE_regFiles = True
         if CREATE_regFiles:
             img1data.create_regFile()
             img2data.create_regFile()
-    
     
         # =======================================================================
         # Flux ratio analysis:
@@ -204,8 +243,73 @@ for img1 in comparisonImages:
             flux2[i] = fits_tools.computeObjectFlux(x[i],y[i],rads[i],imageData2)
 
         # Compute object-wise flux ratio
-        fluxRatio = np.divide(flux1,flux2)
+        fluxRatio = np.divide(flux1,flux2) # Divide flux 1 by flux 2
         
+        # =======================================================================
+        # Looking at flux ratio outliers in deconvolved vs. co-added
+        outliers = {}
+        outliers['high'],outliers['low'] = {},{}
+        
+        outliers['high']['inds'],outliers['high']['fluxRatio'],outliers['high']['x'],outliers['high']['y'],outliers['high']['flux1'],outliers['high']['flux2'] = [],[],[],[],[],[]
+        outliers['high']['aperture_radius'] = []   
+        outliers['low']['inds'],outliers['low']['fluxRatio'],outliers['low']['x'],outliers['low']['y'],outliers['low']['flux1'],outliers['low']['flux2'] = [],[],[],[],[],[]    
+        outliers['low']['aperture_radius'] = []
+              
+        for i in range(len(fluxRatio)):
+            if fluxRatio[i] >= np.median(fluxRatio): # Note that "high outliers" include any value above the median flux ratio value
+                outliers['high']['inds'].append(i)
+                outliers['high']['fluxRatio'].append(fluxRatio[i])
+                outliers['high']['flux1'].append(flux1[i])
+                outliers['high']['flux2'].append(flux2[i])
+                outliers['high']['aperture_radius'].append(rads[i])
+                outliers['high']['x'].append(x[i])
+                outliers['high']['y'].append(y[i])
+            else:
+                outliers['low']['inds'].append(i)
+                outliers['low']['fluxRatio'].append(fluxRatio[i])
+                outliers['low']['flux1'].append(flux1[i])
+                outliers['low']['flux2'].append(flux2[i])
+                outliers['low']['aperture_radius'].append(rads[i])
+                outliers['low']['x'].append(x[i])
+                outliers['low']['y'].append(y[i])
+        
+        # Sort and find top outliers, bottom outliers
+        temp,sorted_high_outlier_indices = zip(*sorted(zip(outliers['high']['fluxRatio'],range(len(outliers['high']['fluxRatio'])))))
+        top_outlier_inds = sorted_high_outlier_indices[::-1][0:10]
+        temp,sorted_low_outlier_indices = zip(*sorted(zip(outliers['low']['fluxRatio'],range(len(outliers['low']['fluxRatio'])))))
+        bottom_outlier_inds = sorted_low_outlier_indices[0:10]
+        
+        # Create .reg files for top and bottom outliers:
+        sex_stats.createRegFile_outliers(outliers['high'],top_outlier_inds,os.path.join(new_dir,'top_outliers.reg'))
+        sex_stats.createRegFile_outliers(outliers['low'],bottom_outlier_inds,os.path.join(new_dir,'bottom_outliers.reg'))
+        
+        print 'High outliers: flux ratio | x | y'
+        for i in top_outlier_inds:
+            
+            # 2) Remove outliers (???) (try np.delete(fluxRatio,fluxRatio[outliers['ind'][i]]) )? or else delete directly from the data dictionary/object
+            # 3) Look @ top and bottom 5 outliers in deconvolved and co-added images; put .reg file in deconvolved vs. coadded folder
+                # --> Use create_regfile type function for x,y,radius (circular)
+            # 4) Commit to github repository?
+            print outliers['high']['fluxRatio'][i],outliers['high']['x'][i],outliers['high']['y'][i]
+            print ''
+            #print outliers['high']['flux1'][i],outliers['high']['flux2'][i]
+            #print outliers['high']['aperture_radius'][i]
+        
+        print 'Low outliers: flux | x | y'
+        for i in bottom_outlier_inds:
+            print outliers['low']['fluxRatio'][i],outliers['low']['x'][i],outliers['low']['y'][i]
+            #print outliers['low']['flux1'][i],outliers['low']['flux2'][i]
+            print ''
+         
+        #'''
+        # Delete high outliers
+        np.delete(x,top_outlier_inds)
+        np.delete(y,top_outlier_inds)
+        np.delete(rads,top_outlier_inds)
+        np.delete(fluxRatio,top_outlier_inds)
+        '''
+            
+        # =======================================================================
         #''' 
         # Print statistics:
         print ''
@@ -218,6 +322,8 @@ for img1 in comparisonImages:
         print ''
         print 'Minimum flux ratio: ', np.min(fluxRatio)
         print 'Maximum flux ratio: ', np.max(fluxRatio)
+        print 'Median flux ratio: ', np.median(fluxRatio)
+        print 'Mean flux ratio: ', np.mean(fluxRatio)
         print 'Standard deviation of flux ratio: ', np.std(fluxRatio)
         print ''
         print 'Minimum values of images: ', np.min(imageData1),' ',np.min(imageData2)
@@ -228,8 +334,9 @@ for img1 in comparisonImages:
         
         # Creating histogram of flux1 and flux2
         # plt.hist has range=(tup1,tup2) to set upper and lower bounds of histogram
-        plt.hist(flux1,bins=70,normed=False,color='green',label=img1.category)
-        plt.hist(flux2,bins=70,normed=False,color='blue',label=img2.category)
+        histRange = (np.min(flux1),np.mean(flux1)+1.5*np.std(flux1))    
+        plt.hist(flux1,bins=70,normed=False,range=histRange,color='green',label=img1.category)
+        plt.hist(flux2,bins=70,normed=False,range=histRange,color='blue',label=img2.category)
         plt.legend()
         plt.title('Histogram of Object Flux for Entire Image')
         plt.ylabel('Frequency (N)')
@@ -239,68 +346,133 @@ for img1 in comparisonImages:
             plt.savefig(os.path.join(new_dir,'flux1_flux2_hist.png'))
             plt.close()
         else:
-            plt.show()
+            plt.close()
 
         # Creating histogram of flux1/flux2 (object-wise flux ratio)
         #plt.hist(fluxRatio,bins=70,range=(-25.0,25.0),color='green') # Range = (-25.0,25.0)
         #plt.hist(fluxRatio,bins=int(abs(np.max(fluxRatio)-np.min(fluxRatio))*10.0),range=(np.min(fluxRatio),np.max(fluxRatio)),color='green') 
-        plt.hist(fluxRatio,bins=70,range=(np.min(fluxRatio),np.max(fluxRatio)),color='green')            
+        histRange = (np.mean(fluxRatio)-2.5*np.std(fluxRatio),np.mean(fluxRatio)+2.5*np.std(fluxRatio))      
+        plt.hist(fluxRatio,bins=70,range=histRange,color='green')           
         plt.title('Histogram of Object-wise Flux Ratio')
         plt.ylabel('Frequency (N)')
         plt.xlabel('Object-wise flux ratio')
+        print ''
+        print 'Histogram x-axis range: {0},{1}'.format(np.max([np.mean(fluxRatio)-2.5*np.std(fluxRatio),np.min(fluxRatio)]),np.mean(fluxRatio)+2.5*np.std(fluxRatio))
+        print ''        
+        hist_axis = [np.max([np.median(fluxRatio)-4.5*np.std(fluxRatio),np.min(fluxRatio)]),np.median(fluxRatio)+4.5*np.std(fluxRatio),-0.1,np.max(plt.hist(fluxRatio,bins=70,range=histRange,color='green')[0]+1.0)]
+        plt.axis(hist_axis)
         SAVE = True
         if SAVE:
             plt.savefig(os.path.join(new_dir,'fluxRatio_hist.png'))
             plt.close()
         else:
-            plt.show()
-            
+            plt.close()
+        
         # Creating histogram of FLUX_RADIUS for PHOT_FLUXFRAC = 0.75,0.8,0.9
         plt.hist(rads,bins=70,color='green')
         plt.title('Histogram of 9/10-light radii')
         plt.xlabel('9/10-light radius')
         plt.ylabel('Frequency (N)')
-        plt.savefig(os.path.join(new_dir,'hist_flux_radius0.90.png'))
-        plt.close()
+        SAVE = False
+        if SAVE:
+            plt.savefig(os.path.join(new_dir,'hist_flux_radius0.90.png'))
+            plt.close()
+        else:
+            plt.close()
         
         # Creating color plot of object-wise flux ratio
-        cmap = matplotlib.cm.jet
-        plt.scatter(x,y,s=5.0*rads,c=fluxRatio-np.median(fluxRatio),marker='o',vmin=np.min(fluxRatio),vmax=np.max(fluxRatio),alpha=0.85)
-        plt.axis([0,1600,0,1600])  
+        cmap = cm.get_cmap('copper')
+        #from scipy import stats
+        colors = fluxRatio #- stats.mode(fluxRatio)
+        vmin = np.max([np.median(colors)-1.5*np.std(colors),np.min(colors)])
+        vmax = np.median(colors)+1.5*np.std(colors)
+        plt.scatter(x,y,s=5.0*rads,c=colors,marker='o',cmap=cmap,vmin=vmin,vmax=vmax,alpha=0.85,linewidths=0.0)
+        plt.axis([0,1600,0,1600])
         plt.colorbar()
         plt.title('Map of Object-wise Flux Ratio')
         plt.xlabel('X_IMAGE')
         plt.ylabel('Y_IMAGE')
+        plt.figtext(.65,.85,'N = '+str(len(fluxRatio)))
         SAVE = True
         if SAVE:
             plt.savefig(os.path.join(new_dir,'fluxRatio_colorplot.png'))
             plt.close()
         else:
-            plt.show()
+            plt.close()
+        
+        #'''
         # Creating histogram of object-wise flux ratio for 4x4 bins
         m,n = 4,4
         xBins,yBins,fluxRatioBins = sex_stats.binData(x,y,fluxRatio,M=m,N=n)
+        binSizes = []
+        for k in fluxRatioBins.iteritems():
+            binSizes.append(len(k[1]))
+        maxBinSize = max(binSizes)
+        histRange = (np.mean(fluxRatio)-2.5*np.std(fluxRatio),np.mean(fluxRatio)+2.5*np.std(fluxRatio))
         fluxRatioBin_means = np.zeros([m,n])
         for i in range(m):
             for j in range(n):
                 plt.subplot(m,n,(n*i + (j+1)))
-                plt.hist(fluxRatioBins[i,j],bins=70)
-                plt.axis([0.0,7.5,0.0,23.0])
+                bins = int(np.ceil((np.max(fluxRatioBins[i,j]) - np.min(fluxRatioBins[i,j]))*4))
+                plt.hist(fluxRatioBins[i,j],bins=bins)
                 fluxRatioBin_means[i,j] = np.mean(fluxRatioBins[i,j])
-        
-        SAVE = True
+                plt.axis([np.mean(fluxRatio)-4.5*np.std(fluxRatio),np.mean(fluxRatio)+4.5*np.std(fluxRatio),0,maxBinSize+1])
+        SAVE = False
         if SAVE:
             plt.savefig(os.path.join(new_dir,'fluxRatioBins_hist.png'))
             plt.close()
         else:
+            plt.close()
+        
+        # Creating KDE of flux ratio
+        from kde_danielsmith import kde as kde_ds        
+        #fr_grid = np.linspace(np.min(fluxRatio)-0.5,np.max(fluxRatio)+0.5,1000)
+        #fluxRatio_KDE = kde_scipy(fluxRatio,fr_grid,0.01) 
+        bandwidth, fr_grid, fluxRatio_KDE = kde_ds(fluxRatio)
+        print 'Optimal bandwidth for KDE of flux ratio: ',bandwidth
+        
+        plt.plot(fr_grid,fluxRatio_KDE,'k',linewidth=2.5)
+        histRange = (np.mean(fluxRatio)-2.5*np.std(fluxRatio),np.mean(fluxRatio)+2.5*np.std(fluxRatio))
+        #plt.hist(fluxRatio,bins=140,range=histRange,color='r')           
+        plt.title('KDE of Object-wise Flux Ratio')
+        plt.ylabel('Frequency (N)')
+        plt.xlabel('Object-wise flux ratio')
+        kde_axis = [np.max([np.median(fluxRatio)-2.5*np.std(fluxRatio),np.min(fluxRatio)]),np.median(fluxRatio)+2.5*np.std(fluxRatio),-0.1,np.max(fluxRatio_KDE)+1.0]
+        plt.axis(kde_axis)
+        SAVE = True
+        if SAVE:
+            plt.savefig(os.path.join(new_dir,'fluxRatio_KDE.png'))
+            plt.close()
+        else:
             plt.show()
-            
+        
+        # Creating KDE of 4x4 flux ratio bins
+        for i in range(m):
+            for j in range(n):
+                plt.subplot(m,n,(n*i + (j+1)))
+                fluxRatioBin_KDE = kde_scipy(fluxRatioBins[i,j],fr_grid,16*bandwidth)
+                #bandwidth, fr_grid, fluxRatioBin_KDE = kde_ds(fluxRatioBins[i,j],guess=1.0)
+                plt.plot(fr_grid,fluxRatioBin_KDE,'k',linewidth=2.0)
+                plt.grid()
+                #plt.gca().get_xaxis().set_visible(False)
+                plt.gca().get_yaxis().set_visible(False)
+                fluxRatioBin_means[i,j] = np.mean(fluxRatioBins[i,j])
+                plt.axis(kde_axis)
+                #  plt.axes(frameon=False)
+        SAVE = True
+        if SAVE:
+            plt.savefig(os.path.join(new_dir,'fluxRatioBins_KDE.png'))
+            plt.close()
+        else:
+            plt.show()
+         
         # Creating color grid for bin means
-        cmap = matplotlib.cm.gray
+        cmap = cm.get_cmap('gray_r')
         plt.pcolormesh(fluxRatioBin_means,cmap=cmap)
         plt.axis([0,m,0,n])
-        plt.title('Object-wise Flux Ratio Bin Means')
         plt.colorbar()
+        plt.title('Object-wise Flux Ratio Bin Means')
+        #plt.colorbar()
         plt.xlabel('X Bin')
         plt.ylabel('Y Bin')
         SAVE = True
@@ -308,4 +480,4 @@ for img1 in comparisonImages:
             plt.savefig(os.path.join(new_dir,'fluxRatioBin_means.png'))
             plt.close()
         else:
-            plt.show()
+            plt.close()

@@ -15,7 +15,7 @@ import numpy as np
 class configure:
     
     default_params = ['NUMBER','FLUX_APER','FLUXERR_APER','MAG_APER','MAGERR_APER','KRON_RADIUS',\
-'X_IMAGE','Y_IMAGE','A_IMAGE','B_IMAGE','THETA_IMAGE','FLUX_RADIUS']
+'X_IMAGE','Y_IMAGE','A_IMAGE','B_IMAGE','THETA_IMAGE','FLUX_RADIUS','THRESHOLD']
     #default_params = []
     
     def __init__(self,image_file,config_file,param_file,dual=False,default_params=default_params):
@@ -135,19 +135,19 @@ class configure:
         MASK = True
         if self.dual:
             mask_file = self.image_file1.replace('.fits','_mask.fits').replace('Good','Masks').replace('Bad','Masks')
+            if not os.path.exists(mask_file):
+                mask_file = self.image_file2.replace('.fits','_mask.fits').replace('Good','Masks').replace('Bad','Masks')
         else:
             mask_file = self.image_file.replace('.fits','_mask.fits').replace('Good','Masks').replace('Bad','Masks')
-        if MASK and os.path.exists(mask_file):      
+        if MASK and os.path.exists(mask_file):
             self.reconfigure('WEIGHT_IMAGE',mask_file)
             self.reconfigure('WEIGHT_TYPE','MAP_WEIGHT')
             
-        # Adjust detection threshold
-        self.reconfigure('DETECT_THRESH',3.0)
         # Adjust aperture diameter-- note, we could also opt to make this a tuple of 2-3 apertures, e.g. (5.0,10.0,15.0)
         self.reconfigure('PHOT_APERTURES',15.0)
         # Adjust background mesh size
         self.reconfigure('BACK_SIZE',220.0)
         # Adjust PHOT_FLUXFRAC
-        self.reconfigure('PHOT_FLUXFRAC',0.90)
+        self.reconfigure('PHOT_FLUXFRAC',0.8)
         
       

@@ -14,6 +14,7 @@ PARAMETERS_NAME  default.param  # name of the file containing catalog contents
 DETECT_TYPE      CCD            # CCD (linear) or PHOTO (with gamma correction)
 DETECT_MINAREA   3              # min. # of pixels above threshold
 
+THRESH_TYPE	 RELATIVE	# RELATIVE or ABSOLUTE ; Meaning of the DETECT THRESH and ANALYSIS THRESH parameters
 DETECT_THRESH    1.5            # <sigmas> or <threshold>,<ZP> in mag.arcsec-2
 ANALYSIS_THRESH  1.5            # <sigmas> or <threshold>,<ZP> in mag.arcsec-2
  

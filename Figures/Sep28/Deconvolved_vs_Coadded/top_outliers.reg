@@ -1,0 +1,23 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+image
+circle(1031.5006,1400.6798,1.078)
+circle(1031.5006,1400.6798,10.78)
+circle(350.0356,1411.1757,1.49)
+circle(350.0356,1411.1757,14.9)
+circle(483.7967,1514.6709,0.985)
+circle(483.7967,1514.6709,9.85)
+circle(863.5273,1546.1119,1.529)
+circle(863.5273,1546.1119,15.29)
+circle(341.186,1432.33,1.88)
+circle(341.186,1432.33,18.8)
+circle(85.0717,1519.089,1.406)
+circle(85.0717,1519.089,14.06)
+circle(1442.2192,1200.9647,1.531)
+circle(1442.2192,1200.9647,15.31)
+circle(92.7318,1570.6804,0.988)
+circle(92.7318,1570.6804,9.88)
+circle(415.8946,1532.6438,1.767)
+circle(415.8946,1532.6438,17.67)
+circle(78.1825,1488.3303,1.037)
+circle(78.1825,1488.3303,10.37)

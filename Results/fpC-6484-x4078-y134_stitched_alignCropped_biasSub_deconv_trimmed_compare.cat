@@ -1,0 +1,14 @@
+#   1 KRON_RADIUS            Kron apertures in units of A or B                         
+#   2 MAGERR_APER            RMS error vector for fixed aperture mag.                   [mag]
+#   3 Y_IMAGE                Object position along y                                    [pixel]
+#   4 X_IMAGE                Object position along x                                    [pixel]
+#   5 THETA_IMAGE            Position angle (CCW/x)                                     [deg]
+#   6 FLUX_APER              Flux vector within fixed circular aperture(s)              [count]
+#   7 A_IMAGE                Profile RMS along major axis                               [pixel]
+#   8 THRESHOLD              Detection threshold above background                       [count]
+#   9 B_IMAGE                Profile RMS along minor axis                               [pixel]
+#  10 FLUX_RADIUS            Fraction-of-light radii                                    [pixel]
+#  11 FLUXERR_APER           RMS error vector for aperture flux(es)                     [count]
+#  12 MAG_APER               Fixed aperture magnitude vector                            [mag]
+#  13 NUMBER                 Running object number                                     
+ 3.50   0.0002   1550.3639    797.7415   0.00     19.83254   461.369           15    28.891    526.880  0.002864835  24.8066          1

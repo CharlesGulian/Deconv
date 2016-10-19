@@ -110,6 +110,7 @@ def binData(x1,x2,y,M=3,N=3,ImgD1=[0,1600],ImgD2=[0,1600]):
             x1Dict[i,j].extend(x1[inds])
             x2Dict[i,j].extend(x2[inds])
             yDict[i,j].extend(y[inds])
+            yDict[i,j] = np.array(yDict[i,j])
             
     return x1Dict,x2Dict,yDict
 
@@ -150,6 +151,19 @@ def createRegFile(outputCatName,regFileName=None):
             Line = 'ellipse('+str(Obj['X_IMAGE'])+','+str(Obj['Y_IMAGE'])+','+str(Obj['KRON_RADIUS']*Obj['A_IMAGE'])+','+str(Obj['KRON_RADIUS']*Obj['B_IMAGE'])+','+str(Obj['THETA_IMAGE'])+')\n'
             g.write(Line)
             
+def createRegFile_outliers(outlierDict,outlierInds,regFileName):
+    # Create a .reg file to locate outliers
+    with open(regFileName,'w') as g:
+        g.write('# Region file format: DS9 version 4.1\n')
+        g.write('global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1\n')
+        g.write('image\n')
+        for i in outlierInds:
+            Line1 = 'circle('+str(outlierDict['x'][i])+','+str(outlierDict['y'][i])+','+str(outlierDict['aperture_radius'][i])+')\n'
+            Line2 = 'circle('+str(outlierDict['x'][i])+','+str(outlierDict['y'][i])+','+str(10.0*outlierDict['aperture_radius'][i])+')\n'
+            #Line3 = '# Flux Ratio = '+str(outlierDict['fluxRatio'][i]) 
+            g.write(Line1)
+            g.write(Line2)
+            #g.write(Line3)
 
 def chiSquareNormalized(Obs,Exp,numParams):
     ''' Compute the "reduced" or "normalized" chi-square value given a set of observed values, 

@@ -25,12 +25,14 @@ import matplotlib.pyplot as plt
 # Image directory:
 image_dir = '/home/DATA/STRIPE82_330-360_AlignCropped/test7'
 image_files = glob.glob(os.path.join(image_dir,'*alignCropped.fits'))
+image_files.remove('/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4894-x4947-y127_stitched_alignCropped_sig.fits')
 
 # ===============================================================================
 # Generating co-add
 
 # Do not load more than 0.5 GB of data at a time on Tesla machine
 max_dir_size = 0.5 # GB
+print 'Specified maximum allowed memory usage: {0} GB'.format(max_dir_size)
 # Find size of directory
 image_file_sizes = []
 for i in range(len(image_files)):
@@ -39,6 +41,8 @@ for i in range(len(image_files)):
     temp = float(file_size)/float((2**30))
     image_file_sizes.append(temp)
 directory_size = sum(image_file_sizes)
+print '\nComputing co-added image from {0} frames'.format(len(image_files))
+print 'Cumulative size of image files: {0} GB\n'.format(directory_size)
 
 # ===============================================================================
 # Computing optimal allocation of memory for computing co-add
@@ -61,7 +65,6 @@ if directory_size > max_dir_size:
     num_pix_maxload = N*N
     if num_pix_maxload > proportion*num_pix:
         print 'Error: maximum memory usage exceeded'
-    print N
     
 else:
     M = 1.
@@ -121,7 +124,8 @@ for i in range(M):
         
         coadd_image[indices[0]:indices[1],indices[2]:indices[3]] = coadd_bin
 
-print coadd_image
+print '\nCo-added image complete'
+print 'Co-added image dimensions: ',np.shape(coadd_image)
 coadd_image_file = os.path.join(curr_dir,'AstroImages','Coadd','custom_coadd.fits')
 fits.writeto(coadd_image_file,coadd_image,clobber=True)
 

@@ -26,6 +26,11 @@ import matplotlib.pyplot as plt
 image_dir = '/home/DATA/STRIPE82_330-360_AlignCropped/test7'
 image_files = glob.glob(os.path.join(image_dir,'*alignCropped.fits'))
 image_files.remove('/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4894-x4947-y127_stitched_alignCropped.fits')
+<<<<<<< HEAD
+=======
+#print type(image_files)
+#print image_files[0:5]
+>>>>>>> 699d31e889ab43d14422cad5679a2c14643f6b2b
 
 # ===============================================================================
 # Generating co-add

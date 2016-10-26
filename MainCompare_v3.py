@@ -64,7 +64,7 @@ if (np.shape(deconvolvedImageData) != (1600,1600)) and TRIM:
     
 # ===============================================================================
 # List of images to be compared: 
-comparisonImages = [coaddedImage1,deconvolvedImage]
+comparisonImages = [coaddedImage2,deconvolvedImage]
 
 # ===============================================================================
 # Image comparisons:
@@ -181,6 +181,8 @@ for img1 in comparisonImages:
         img_tag2 = (os.path.split(img2.filename)[1])
         img_tag2 = img_tag2[0:len(img_tag2)-len('.fits')]
         
+        print '\nImage tags: {0}, {1}'.format(img_tag1,img_tag2)   
+        
         outputCat1 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag1+'_compare.cat')
         if not os.path.exists(outputCat1):
             print 'Error: first output catalog path does not exist'
@@ -188,6 +190,8 @@ for img1 in comparisonImages:
         outputCat2 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag2+'_compare.cat')
         if not os.path.exists(outputCat2):
             print 'Error: second output catalog path does not exist'
+        
+        print outputCat1, outputCat2
         
         # Create sex_stats.data objects:
         img1data = sex_stats.data(outputCat1)

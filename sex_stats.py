@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jun 29 20:31:36 2016
-
 @author: charlesgulian
 """
 # Library of statistics functions for photometric statistics and data analysis

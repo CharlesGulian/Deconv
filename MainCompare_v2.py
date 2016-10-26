@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jun 30 15:34:39 2016
-
 @author: charlesgulian
 """
 import os

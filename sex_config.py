@@ -2,7 +2,6 @@
 
 """
 Created on Fri Jun 17 16:28:41 2016
-
 @author: charlesgulian
 """
 
@@ -149,5 +148,3 @@ class configure:
         self.reconfigure('BACK_SIZE',220.0)
         # Adjust PHOT_FLUXFRAC
         self.reconfigure('PHOT_FLUXFRAC',0.8)
-        
-      

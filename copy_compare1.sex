@@ -1,8 +1,8 @@
-CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/CheckImages/Coadded1_copy_Coadded1_copy_compare_APERTURES.fits
+CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/CheckImages/Coadded_copy_Coadded_copy_compare_APERTURES.fits
 PARAMETERS_NAME /Users/annepstein/Work/Deconv/copy_compare1.param
 ANALYSIS_THRESH 1.5
 SATUR_KEY SATURATE
-THRESH_TYPE ABSOLUTE
+THRESH_TYPE RELATIVE
 WEIGHT_TYPE NONE
 XSL_URL file:///usr/local/share/sextractor/sextractor.xsl
 GAIN 0.0
@@ -14,12 +14,12 @@ CLEAN_PARAM 1.5
 BACK_FILTERSIZE 3
 FILTER Y
 PHOT_FLUXFRAC 0.8
-BACK_TYPE MANUAL
+BACK_TYPE AUTO
 ASSOC_PARAMS 2,3,4
 DEBLEND_MINCONT 0.005
-CATALOG_NAME /Users/annepstein/Work/Deconv/Results/Coadded1_copy_Coadded1_copy_compare.cat
+CATALOG_NAME /Users/annepstein/Work/Deconv/Results/Coadded_copy_Coadded_copy_compare.cat
 FLAG_IMAGE flag.fits
-DETECT_THRESH 5.0
+DETECT_THRESH 30.0
 CATALOG_TYPE ASCII_HEAD
 SATUR_LEVEL 200000.0
 STARNNW_NAME default.nnw

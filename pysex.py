@@ -60,20 +60,36 @@ def loop(img_dir,config_files):
         call_sex(imgName,config_file=config_file)    
   
 def compare(image_file1,image_file2,config_file1,config_file2,masked_image_file1=None):
-    
+    #'''    
     if masked_image_file1 != None:
+        
+        print 'Detecting from masked image, measuring from original image(s)'        
+        
         print('Detecting from {}, measuring from {}').format(masked_image_file1,image_file1)
         call_sex(masked_image_file1+','+image_file1,config_file=config_file1)
     
         print('Detecting from {}, measuring from {}').format(masked_image_file1,image_file2)
         call_sex(masked_image_file1+','+image_file2,config_file=config_file2)
     else:
+        
+        print 'Detecting and measuring from original image(s)'        
+        
         print('Detecting from {}, measuring from {}').format(image_file1,image_file1)
         call_sex(image_file1+','+image_file1,config_file=config_file1)
     
         print('Detecting from {}, measuring from {}').format(image_file1,image_file2)
         call_sex(image_file1+','+image_file2,config_file=config_file2)
+    #'''
+    '''
+    print('Detecting from {}, measuring from {}').format(image_file1,image_file1)
+    call_sex(image_file1+','+image_file1,config_file=config_file1)
 
+    print('Detecting from {}, measuring from {}').format(image_file1,image_file2)
+    call_sex(image_file1+','+image_file2,config_file=config_file2)
+    #'''
+        
+        
+        
 #testImage1 = 'AstroImages/Good/fpC-6484-x4078-y134_stitched_alignCropped.fits'
 #testImage2 = 'AstroImages/Good/fpC-7006-x5226-y115_stitched_alignCropped.fits'
 

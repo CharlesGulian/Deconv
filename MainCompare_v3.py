@@ -170,7 +170,7 @@ for img1 in comparisonImages:
         # =======================================================================
         # Compare images in SExtractor
         
-        pysex.compare(img1.filename,img2.filename,'copy_compare1.sex','copy_compare2.sex')#,masked_image_file1=img1.masked)
+        pysex.compare(img1.filename,img2.filename,'copy_compare1.sex','copy_compare2.sex',masked_image_file1=img1.masked)
         
         # =======================================================================
         # Retrieve data from output catalogs        

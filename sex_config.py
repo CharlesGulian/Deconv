@@ -121,7 +121,7 @@ class configure:
             self.reconfigure('MAG_ZEROPOINT',28.05)
         
         self.reconfigure('PARAMETERS_NAME',os.path.join(curr_dir,self.param_file))
-        self.reconfigure('CHECKIMAGE_TYPE','APERTURES')
+        self.reconfigure('CHECKIMAGE_TYPE','NONE')
         
         if self.dual:
             self.reconfigure('CATALOG_NAME',os.path.join(curr_dir,'Results',(img_tag1+'_'+img_tag2+'_compare.cat')))

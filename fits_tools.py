@@ -16,7 +16,6 @@ import matplotlib
 from photutils import aperture_photometry
 from photutils import CircularAperture
 
-
 def binImage(pixelArray,M=3,N=3):
     '''
     - Bins pixels along image axes into MxN bins (default MxN = 3x3)  
@@ -36,7 +35,6 @@ def binImage(pixelArray,M=3,N=3):
             #print 'Bin: ',i,j
             #print 'Shape: ',np.shape(imgBinDict[i,j])
     return imgBinDict
-    
     
 def computeObjectFlux(x0,y0,radius,image):
     '''

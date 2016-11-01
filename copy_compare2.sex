@@ -1,4 +1,4 @@
-CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/CheckImages/Coadded_copy_Deconvolved_shifted_compare_APERTURES.fits
+CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/CheckImages/Coadded2_copy_Deconvolved_shifted_compare_NONE.fits
 PARAMETERS_NAME /Users/annepstein/Work/Deconv/copy_compare2.param
 ANALYSIS_THRESH 1.5
 SATUR_KEY SATURATE
@@ -17,7 +17,7 @@ PHOT_FLUXFRAC 0.8
 BACK_TYPE MANUAL
 ASSOC_PARAMS 2,3,4
 DEBLEND_MINCONT 0.005
-CATALOG_NAME /Users/annepstein/Work/Deconv/Results/Coadded_copy_Deconvolved_shifted_compare.cat
+CATALOG_NAME /Users/annepstein/Work/Deconv/Results/Coadded2_copy_Deconvolved_shifted_compare.cat
 FLAG_IMAGE flag.fits
 DETECT_THRESH 15.0
 CATALOG_TYPE ASCII_HEAD
@@ -31,7 +31,7 @@ PHOT_AUTOPARAMS 2.5,3.5
 MEMORY_OBJSTACK 3000
 PIXEL_SCALE 0.396
 MAG_GAMMA 4.0
-CHECKIMAGE_TYPE APERTURES
+CHECKIMAGE_TYPE NONE
 CLEAN Y
 WEIGHT_IMAGE weight.fits
 ASSOC_NAME sky.list

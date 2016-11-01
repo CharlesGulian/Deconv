@@ -15,6 +15,7 @@ curr_dir = os.getcwd()
 # All image filenames must be absolute paths or relative to current working directory
 
 def _call(args):
+    #print " ".join(args)
     try:
         subprocess.call(args,shell=False)
     except subprocess.CalledProcessError:

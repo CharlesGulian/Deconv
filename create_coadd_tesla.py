@@ -82,6 +82,16 @@ else:
 # Define empty array for new co-added image
 coadd_image = np.zeros(image_dimensions)
 
+# Define type of co-add (mean vs. median)
+MEDIAN = False
+MEAN = not(MEDIAN)       
+if MEDIAN:
+    op = np.median
+    ext = 'median'
+elif MEAN:
+    op = np.mean
+    ext = 'mean'
+
 # Iterate through each of MxM regions of image:
 temp = int(M)
 M = temp
@@ -120,16 +130,12 @@ for i in range(M):
                 for p in range(len(image_files)):
                     pixel = imageBin_dict[p][v,w]
                     pixel_vector.append(pixel)
-                # Find median of pixel vector, add to co-added image array
-                coadd_pixel = np.median(pixel_vector)
-                coadd_bin[v,w] = coadd_pixel
-        
+		coadd_pixel = op(pixel_vector)
+		coadd_bin[v,w] = coadd_pixel
+
         coadd_image[indices[0]:indices[1],indices[2]:indices[3]] = coadd_bin
 
 print '\nCo-added image complete'
 print 'Co-added image dimensions: ',np.shape(coadd_image)
-coadd_image_file = os.path.join(curr_dir,'AstroImages','Coadd','custom_coadd.fits')
+coadd_image_file = os.path.join(curr_dir,'AstroImages','Coadd','custom_coadd_{0}.fits'.format(ext))
 fits.writeto(coadd_image_file,coadd_image,clobber=True)
-
-
-

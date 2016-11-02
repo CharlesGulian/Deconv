@@ -83,7 +83,7 @@ else:
 coadd_image = np.zeros(image_dimensions)
 
 # Define type of co-add (mean vs. median)
-MEDIAN = False
+MEDIAN = True
 MEAN = not(MEDIAN)       
 if MEDIAN:
     op = np.median

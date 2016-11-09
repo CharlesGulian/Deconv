@@ -45,11 +45,12 @@ badImage3 = Image('AstroImages/Bad/fpC-5781-x25627-y293_stitched_alignCropped.fi
 badImage4 = Image('AstroImages/Bad/fpC-7140-x24755-y270_stitched_alignCropped.fits','Bad','4')
 
 # Co-added image
-coaddedImage1 = Image('AstroImages/Coadd/fpC-206-x4684-y126_stitched_alignCropped-COADD.fits','Coadded','1')
-coaddedImage2 = Image('AstroImages/Coadd/custom_coadd.fits','Coadded','2')
+coaddedImage1 = Image('AstroImages/Coadd/fpC-206-x4684-y126_stitched_alignCropped-COADD.fits','Coadded','_SDSS')
+coaddedImage2 = Image('AstroImages/Coadd/custom_coadd_median.fits','Coadded','_Custom_Median')
+coaddedImage3 = Image('AstroImages/Coadd/custom_coadd_mean.fits','Coadded','_Custom_Mean')
 
 # Deconvolved image
-deconvolvedImage = Image('AstroImages/Deconvolved/deconv.fits','Deconvolved','')
+deconvolvedImage = Image('AstroImages/Deconvolved/deconv.fits','Deconvolved','Deconvolved')
 # Trimming deconvolved image to 1600x1600
 deconvolvedImageData = fits_tools.getPixels(deconvolvedImage.filename)
 TRIM = True
@@ -63,8 +64,9 @@ if (np.shape(deconvolvedImageData) != (1600,1600)) and TRIM:
     deconvolvedImage = Image(temp,'Deconvolved','')
     
 # ===============================================================================
+    
 # List of images to be compared: 
-comparisonImages = [coaddedImage2,deconvolvedImage]
+comparisonImages = [coaddedImage1,coaddedImage3]
 
 # ===============================================================================
 # Image comparisons:
@@ -80,7 +82,7 @@ for img1 in comparisonImages:
         # ===============================================================================
         # Make directory to save results and figures to different comparison categories (Good vs. Good, Good vs. Deconvolved, etc.)
         #image1,image2 = img1.filename,img2.filename # Get image filenames
-        new_dir = os.path.join(curr_dir,'Figures','Oct21',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
+        new_dir = os.path.join(curr_dir,'Figures','Nov2',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
         if not os.path.exists(new_dir):
             os.mkdir(os.path.join(new_dir))
             
@@ -150,7 +152,7 @@ for img1 in comparisonImages:
         for i,img in enumerate(imgs):
             if img.category == 'Deconvolved':
                 figs[i].reconfigure('THRESH_TYPE','ABSOLUTE')
-                figs[i].reconfigure('DETECT_THRESH',15.0)
+                figs[i].reconfigure('DETECT_THRESH',25.0)
                 figs[i].reconfigure('BACK_TYPE','MANUAL')
                 figs[i].reconfigure('BACK_VALUE',0.0)
                 #print '\nSetting detection threshold = {0}'.format(figs[i].config_dict['DETECT_THRESH'])
@@ -159,7 +161,7 @@ for img1 in comparisonImages:
             if img.category == 'Coadded':
                 print '\nSetting DETECT_THRESH = 1.0 for co-added image\n'
                 figs[i].reconfigure('THRESH_TYPE','ABSOLUTE')
-                figs[i].reconfigure('DETECT_THRESH',5.0)
+                figs[i].reconfigure('DETECT_THRESH',25.0)
                 figs[i].reconfigure('BACK_TYPE','MANUAL')
                 figs[i].reconfigure('BACK_VALUE',0.0)
         
@@ -215,7 +217,7 @@ for img1 in comparisonImages:
         
         rads1 = img1data.get_data('FLUX_RADIUS')
         rads2 = img2data.get_data('FLUX_RADIUS')
-        
+        #print rads1, rads2
         
         print '\nLength of x,y: ',len(x),' ',len(y)
         print 'Length of rads1,rads2: ',len(rads1),' ',len(rads2)        
@@ -232,7 +234,9 @@ for img1 in comparisonImages:
             rads[i] = rads2[i] # rads = rads2 where rads1 is negative
         
         imageData1,imageData2 = fits_tools.getPixels(img1.filename),fits_tools.getPixels(img2.filename)
-        '''        
+        
+        '''  
+        # DON'T DO THIS! IT CREATES SYSTEMATICS
         # Set all pixel values >= 0.0:
         if len(np.where(imageData1 < 0.0)[0]) > 0:
             print ''
@@ -256,10 +260,18 @@ for img1 in comparisonImages:
             flux2[i] = fits_tools.computeObjectFlux(x[i],y[i],rads[i],imageData2)
         
         print 'Length of flux1 and flux2: ',len(flux1),' ',len(flux2)
+        #print flux1,flux2
         # Compute object-wise flux ratio
         fluxRatio = np.divide(flux1,flux2) # Divide flux 1 by flux 2
-        log_fluxRatio = np.log(fluxRatio)        
+        log_fluxRatio = np.log(fluxRatio)
         fluxRatio = log_fluxRatio # Note that from here on, "flux ratio" = ln(f1/f2)
+        #print fluxRatio
+        naninds = np.where(np.isnan(fluxRatio))[0]
+        print rads1[naninds]
+        print rads2[naninds]
+        print flux1[naninds]
+        print flux2[naninds]
+        print fluxRatio[naninds]
         
         # =======================================================================
         """
@@ -330,7 +342,7 @@ for img1 in comparisonImages:
         #''' 
         # Print statistics:
         print ''
-        print img1.category+' vs. '+img2.category
+        print img1.category+img1.ID+' vs. '+img2.category+img2.ID
         print ''
         print 'Number of objects detected: ',len(fluxRatio)
         print 'Minimum flux values: ', np.min(flux1),' ',np.min(flux2)
@@ -396,7 +408,7 @@ for img1 in comparisonImages:
         plt.title('Histogram of Object Flux for Entire Image')
         plt.ylabel('Frequency (N)')
         plt.xlabel('Object flux')
-        SAVE = True
+        SAVE = False
         if SAVE:
             plt.savefig(os.path.join(new_dir,'flux1_flux2_hist.png'))
             plt.close()
@@ -452,14 +464,14 @@ for img1 in comparisonImages:
                 
             # Creating scatter plot of ln(flux1) vs. ln(flux2)
             cmap = cm.get_cmap('rainbow')
-            plt.scatter(np.log(flux2),np.log(flux1),c=y,cmap=cmap)
+            plt.scatter(np.log(flux2),np.log(flux1),c=y,cmap=cmap,alpha=0.85,linewidths=0.0)
             X = np.linspace(0.0,np.max(np.log(flux2_og))+2.0,1000.0)
             plt.plot(X,X)
             plt.colorbar()
             plt.axis([0.0,np.max(np.log(flux2_og))+1.0,0.0,np.max(np.log(flux1_og))+1.0])
-            plt.xlabel('ln(flux2)')
-            plt.ylabel('ln(flux1): color-coded to image y-coordinate')
-            plt.title('Scatter plot of ln(flux 1st image) vs. ln(flux 2nd image)')
+            plt.xlabel('ln(flux2): '+img2.category+img2.ID)
+            plt.ylabel('ln(flux1): '+img1.category+img1.ID)
+            plt.title('Scatter plot of ln(flux 1st image) vs. ln(flux 2nd image)\n (color-coded to image y-coordinate)')
             SAVE = True
             if SAVE:
                 plt.savefig(os.path.join(new_dir,'log_flux1_flux2_scatter_{}.png'.format('regime'+str(i))))
@@ -512,7 +524,7 @@ for img1 in comparisonImages:
                 plt.close()
             #'''
             
-            
+            ''' 
             # Creating KDE of flux ratio
             from kde_danielsmith import kde as kde_ds        
             #fr_grid = np.linspace(np.min(fluxRatio)-0.5,np.max(fluxRatio)+0.5,1000)
@@ -534,7 +546,8 @@ for img1 in comparisonImages:
                 plt.close()
             else:
                 plt.show()
-        
+            #'''
+                
             '''
             # Creating KDE of 4x4 flux ratio bins
             for i in range(m):
@@ -615,14 +628,14 @@ for img1 in comparisonImages:
                 plt.plot(X,X)
                 plt.colorbar()
                 plt.axis([0.0,np.max(np.log(flux2_og))+1.0,0.0,np.max(np.log(flux1_og))+1.0])
-                plt.xlabel('ln(flux2)')
-                plt.ylabel('ln(flux1): color-coded to image y-coordinate')
-                plt.title('Scatter plot of ln(flux 1st image) vs. ln(flux 2nd image)')
+                plt.xlabel('ln(flux2): '+img2.category+img2.ID)
+                plt.ylabel('ln(flux1): '+img1.category+img1.ID)
+                plt.title('Scatter plot of ln(flux 1st image) vs. ln(flux 2nd image)\n (color-coded to image y-coordinate)')
                 SAVE = True
                 if SAVE:
                     plt.savefig(os.path.join(new_dir,'log_flux1_flux2_scatter_bin_{0}-{1}.png'.format(i,j)))
                     plt.close()
                 else:
                     plt.close()
-                    
+    #break # Break to only detect from first image, measure from second image
                 

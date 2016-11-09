@@ -147,4 +147,4 @@ class configure:
         # Adjust background mesh size
         self.reconfigure('BACK_SIZE',220.0)
         # Adjust PHOT_FLUXFRAC
-        self.reconfigure('PHOT_FLUXFRAC',0.8)
+        self.reconfigure('PHOT_FLUXFRAC',0.8) # Change from 0.8 to 0.6?

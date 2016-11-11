@@ -18,17 +18,32 @@ import numpy as np
 from astropy.io import fits
 import matplotlib.pyplot as plt
 
-
 # ===============================================================================
 # Getting image file paths
 
 # Image directory:
-image_dir = '/home/DATA/STRIPE82_330-360_AlignCropped/test7'
+image_dir = '/home/DATA/charlie/STRIPE82_330-360_AlignCropped/test7'
 image_files = glob.glob(os.path.join(image_dir,'*alignCropped.fits'))
-image_files.remove('/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4927-x4127-y118_stitched_alignCropped.fits')
+print image_files
+#image_files.remove('/home/DATA/Charlie/STRIPE82_330-360_AlignCropped/test7/fpC-4927-x4127-y118_stitched_alignCropped.fits')
 #print type(image_files)
 #print image_files[0:5]
 
+# ===============================================================================
+# Computing flux scaling coefficient (alpha) for all images
+
+alpha_array = []
+s_array = []
+for i in range(len(image_files)):
+    image_file = image_files[i]
+    header = fits.getheader(image_file)
+    c20 = header['flux20']
+    b = header['softbias']
+    s = header['sky']
+    alpha = (1e-8)/(c20 - b - s)
+    alpha_array.append(alpha)
+    s_array.append(s)
+del(header)
 # ===============================================================================
 # Generating co-add
 
@@ -83,7 +98,7 @@ else:
 coadd_image = np.zeros(image_dimensions)
 
 # Define type of co-add (mean vs. median)
-MEDIAN = True
+MEDIAN = False
 MEAN = not(MEDIAN)       
 if MEDIAN:
     op = np.median
@@ -128,7 +143,7 @@ for i in range(M):
                 # Create vector for (v,w)th pixel of each image
                 pixel_vector = []
                 for p in range(len(image_files)):
-                    pixel = imageBin_dict[p][v,w]
+                    pixel = alpha_array[p]*(imageBin_dict[p][v,w] - 1000.0 - s_array[p])
                     pixel_vector.append(pixel)
 		coadd_pixel = op(pixel_vector)
 		coadd_bin[v,w] = coadd_pixel
@@ -139,3 +154,6 @@ print '\nCo-added image complete'
 print 'Co-added image dimensions: ',np.shape(coadd_image)
 coadd_image_file = os.path.join(curr_dir,'AstroImages','Coadd','custom_coadd_{0}.fits'.format(ext))
 fits.writeto(coadd_image_file,coadd_image,clobber=True)
+
+
+print '\nLength of image directory:',len(image_files)

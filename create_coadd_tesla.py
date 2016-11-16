@@ -107,6 +107,9 @@ elif MEAN:
     op = np.mean
     ext = 'mean'
 
+# List of image means
+image_mean_list = []
+
 # Iterate through each of MxM regions of image:
 temp = int(M)
 M = temp
@@ -128,6 +131,8 @@ for i in range(M):
             image_file = image_files[p]
             # Get data
             image = fits.getdata(image_file)
+	    image_mean = np.mean(image)
+	    image_mean_list.append(image_mean)
             # Slice out the (i,j)th bin
             imageBin = image[indices[0]:indices[1],indices[2]:indices[3]]
             # Save the data from this bin
@@ -149,6 +154,13 @@ for i in range(M):
 		coadd_bin[v,w] = coadd_pixel
 
         coadd_image[indices[0]:indices[1],indices[2]:indices[3]] = coadd_bin
+
+# Scaling new image to a mean value comparable to composite frames
+scaling_factor = np.mean(image_mean_list)/np.mean(coadd_image)
+temp = scaling_factor*coadd_image
+coadd_image = temp
+
+print 'Co-add image mean: {0}'.format(np.mean(coadd_image))
 
 print '\nCo-added image complete'
 print 'Co-added image dimensions: ',np.shape(coadd_image)

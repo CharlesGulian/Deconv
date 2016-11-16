@@ -44,6 +44,7 @@ for image_file in image_files:
     if len(og_file_list) == 0:
 	print 'Error: non-aligned image not found'
 	continue
+    flux0,flux20,bias,skylevel=None,None,None,None
     # Select an image from unaligned image directory with appropriate header information
     print 'Selecting corresponding image from unaligned directory'
     for i in range(len(og_file_list)):
@@ -64,6 +65,10 @@ for image_file in image_files:
     	break
     if i == len(og_file_list)-1:
 	print 'WARNING: No suitable image found for {0}'.format(image_file)
+        print "flux0",flux0
+        print "flux20",flux20
+        print "bias",bias
+        print "sky",skylevel
 	bad_image_files.append(image_file)
 	continue
 
@@ -87,3 +92,6 @@ print og_files
 print len(og_files)
 print len(bad_image_files)
 print len(image_files)
+ 
+for i in bad_image_files:
+    print i

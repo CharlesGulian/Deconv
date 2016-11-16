@@ -98,7 +98,7 @@ else:
 coadd_image = np.zeros(image_dimensions)
 
 # Define type of co-add (mean vs. median)
-MEDIAN = False
+MEDIAN = True
 MEAN = not(MEDIAN)       
 if MEDIAN:
     op = np.median
@@ -156,7 +156,7 @@ for i in range(M):
         coadd_image[indices[0]:indices[1],indices[2]:indices[3]] = coadd_bin
 
 # Scaling new image to a mean value comparable to composite frames
-scaling_factor = np.mean(image_mean_list)/np.mean(coadd_image)
+scaling_factor = (np.mean(image_mean_list)-1500.0)/np.mean(coadd_image)
 temp = scaling_factor*coadd_image
 coadd_image = temp
 

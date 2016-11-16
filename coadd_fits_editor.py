@@ -12,6 +12,7 @@ import glob
 import numpy as np
 from astropy.io import fits
 import matplotlib.pyplot as plt
+import fits_tools as tools
 
 # ===============================================================================
 # Getting image file paths for co-add frames

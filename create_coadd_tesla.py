@@ -155,11 +155,6 @@ for i in range(M):
 
         coadd_image[indices[0]:indices[1],indices[2]:indices[3]] = coadd_bin
 
-# Scaling new image to a mean value comparable to composite frames
-scaling_factor = (np.mean(image_mean_list)-1500.0)/np.mean(coadd_image)
-temp = scaling_factor*coadd_image
-coadd_image = temp
-
 print 'Co-add image mean: {0}'.format(np.mean(coadd_image))
 
 print '\nCo-added image complete'

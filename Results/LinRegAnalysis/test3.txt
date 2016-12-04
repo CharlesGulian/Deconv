@@ -1,0 +1,25 @@
+# Linear regression analysis results
+# Columns: Slope | Intercept | r-value | p-value 
+
+# (1) Results for data in x-axis interval 3.97033830286:15.9877273736 (n=400)
+0.0147764162481 0.946405194971 0.191735876866 0.000114050042328
+# Statistically significant deviation from slope of 1.0
+
+# (2) Results for data in x-axis interval 3.97033830286:6.33031043699 (n=79)
+-0.405155459093 3.28834352085 -0.844238305507 1.48703866696e-22
+# Statistically significant deviation from slope of 1.0
+
+# (3) Results for data in x-axis interval 6.40131194901:8.72334129661 (n=79)
+0.0882810434175 0.217074851701 0.302939454478 0.0066526068364
+# Statistically significant deviation from slope of 1.0
+
+# (4) Results for data in x-axis interval 8.79331932992:11.1570788169 (n=79)
+0.0120856804804 0.900131427077 0.0434670536464 0.703674144931
+
+# (5) Results for data in x-axis interval 11.1834569205:13.5501137485 (n=79)
+0.110020403 -0.250207041474 0.403580204889 0.000225932467704
+# Statistically significant deviation from slope of 1.0
+
+# (6) Results for data in x-axis interval 13.6275910401:15.9877273736 (n=80)
+0.0349988963696 0.751288881264 0.112065095621 0.322327057529
+

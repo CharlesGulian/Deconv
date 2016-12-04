@@ -131,7 +131,7 @@ class configure:
             self.reconfigure('CHECKIMAGE_NAME',os.path.join(curr_dir,'Results',(img_tag+'_'+self.config_dict['CHECKIMAGE_TYPE']+'.fits')))   
         
         # Finding and applying binary mask file to image
-        MASK = True
+        MASK = False
         if self.dual:
             mask_file = self.image_file1.replace('.fits','_mask.fits').replace('Good','Masks').replace('Bad','Masks')
             if not os.path.exists(mask_file):

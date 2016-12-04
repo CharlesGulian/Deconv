@@ -1,0 +1,24 @@
+# List of images with missing header keywords
+
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4198-x5367-y131_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-7121-x4489-y109_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-5603-x4452-y138_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4868-x4211-y138_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4184-x5162-y135_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4933-x5265-y135_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4207-x4833-y129_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-7106-x4177-y104_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-2662-x4873-y122_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-5770-x4271-y131_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4874-x4052-y124_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4858-x4645-y126_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-1033-x4114-y81_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4894-x4947-y127_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-5719-x4838-y122_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4917-x4502-y133_stitched_alignCropped.fits
+/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-5744-x5245-y126_stitched_alignCropped.fits
+
+
+
+
+

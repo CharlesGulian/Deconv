@@ -44,7 +44,7 @@ badImage2 = Image('AstroImages/Bad/fpC-6548-x24940-y302_stitched_alignCropped.fi
 badImage3 = Image('AstroImages/Bad/fpC-5781-x25627-y293_stitched_alignCropped.fits','Bad','3')
 badImage4 = Image('AstroImages/Bad/fpC-7140-x24755-y270_stitched_alignCropped.fits','Bad','4')
 
-# Co-added image
+# Co-added images
 coaddedImage1 = Image('AstroImages/Coadd/fpC-206-x4684-y126_stitched_alignCropped-COADD.fits','Coadded','_SDSS')
 coaddedImage2 = Image('AstroImages/Coadd/custom_coadd_median.fits','Coadded','_Custom_Median')
 coaddedImage3 = Image('AstroImages/Coadd/custom_coadd_mean.fits','Coadded','_Custom_Mean')
@@ -65,9 +65,12 @@ if (np.shape(deconvolvedImageData) != (1600,1600)) and TRIM:
     
 # ===============================================================================
     
-# List of images to be compared: 
+# List of images to be compared:
 comparisonImages = [coaddedImage1,coaddedImage3]
-
+'''
+# List of all images created:
+allImage_list = [coaddedImage1,coaddedImage3]
+'''
 # ===============================================================================
 # Image comparisons:
 for img1 in comparisonImages:
@@ -82,7 +85,7 @@ for img1 in comparisonImages:
         # ===============================================================================
         # Make directory to save results and figures to different comparison categories (Good vs. Good, Good vs. Deconvolved, etc.)
         #image1,image2 = img1.filename,img2.filename # Get image filenames
-        new_dir = os.path.join(curr_dir,'Figures','Nov2',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
+        new_dir = os.path.join(curr_dir,'Figures','Dec2',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
         if not os.path.exists(new_dir):
             os.mkdir(os.path.join(new_dir))
             
@@ -91,7 +94,7 @@ for img1 in comparisonImages:
             
         imgs = [img1,img2]
         for i,img in enumerate(imgs):
-            
+        
             if img.category == 'Good':
                 temp = img.filename.replace('.fits','_biasSub.fits')
                 fits_tools.subtractBias(img.filename,new_image_file=temp,bias=1000.0)
@@ -105,12 +108,49 @@ for img1 in comparisonImages:
                 temp = img.filename.replace('.fits','_masked.fits')
                 fits_tools.maskImage(img.filename,maskFile,masked_image_file=temp)
                 img.masked = temp
+                # Scaling co-added images to SDSS co-add
+                temp = img.filename.replace('.fits','_normed.fits')
+                imageData = fits.getdata(img.filename)
+                header = fits.getheader(img.filename)
+                S = header['pixel_scale_factor']
+                imageData = S*imageData
+                fits.writeto(temp,imageData,header=header,clobber=True)
+                del(imageData)
+                del(header)
+                del(S)
+                img.filename = temp
                 
             if img.category == 'Deconvolved':
                 temp = img.filename.replace('.fits','_masked.fits')
                 fits_tools.maskImage(img.filename,maskFile,masked_image_file=temp)
                 img.masked = temp
-              
+        
+        # ===============================================================================
+        #'''
+        import object_region_binary_mask_gen as orbm_gen
+        region_mask_file = os.path.join(new_dir,'object_region_binary_mask.fits')
+        orbm_gen.create_mask(img1.filename,region_mask_file) # Note that we need (should) only create a mask for one object to exclude bias from pixel misalignment
+        object_region_mask = fits.getdata(region_mask_file)
+        #'''
+        # Scale images to one another, rewrite scaled image 2 to copy file
+        imageData1 = fits.getdata(img1.filename)
+        imageData2 = fits.getdata(img2.filename)
+        masked_imageData1 = np.multiply(imageData1,object_region_mask)
+        masked_imageData2 = np.multiply(imageData2,object_region_mask)
+
+        S = np.sum(np.multiply(masked_imageData1,masked_imageData2))/np.sum(np.multiply(masked_imageData2,masked_imageData2))
+        tempdata = S*imageData2
+        fits.writeto(img2.filename.replace('.fits','_scaled.fits'),tempdata,fits.getheader(img2.filename),clobber=True)
+        temp = img2.filename.replace('.fits','_scaled.fits')
+        img2.filename = temp
+        
+        print 'Scaling factor between images: ', S
+        print 'Mean/standard dev. of image 1: {0}, {1}'.format(np.mean(imageData1),np.std(imageData1))
+        print 'Mean/standard dev. of scaled image 2: {0}, {1} \n'.format(np.mean(tempdata),np.std(tempdata))
+        
+        #''' 
+        
+        # ===============================================================================
         # Re-align images
         header1 = fits.getheader(img1.filename)
         header2 = fits.getheader(img2.filename)
@@ -125,8 +165,8 @@ for img1 in comparisonImages:
         shifted_image2_data = fits_tools.shift_image(fits.getdata(img2.filename),del_x,del_y)
         
         # New image file names:
-        new_image1 = os.path.join(new_dir,img1.category+img1.ID+'_copy'+'.fits')
-        new_image2 = os.path.join(new_dir,img2.category+img2.ID+'_shifted'+'.fits')
+        new_image1 = os.path.join(new_dir,img1.category+img1.ID+'_copy.fits')
+        new_image2 = os.path.join(new_dir,img2.category+img2.ID+'_shifted.fits')
         
         fits.writeto(new_image1,fits.getdata(img1.filename),header=fits.getheader(img1.filename),clobber=True)
         fits.writeto(new_image2,shifted_image2_data,header=fits.getheader(img2.filename),clobber=True)
@@ -152,22 +192,21 @@ for img1 in comparisonImages:
         for i,img in enumerate(imgs):
             if img.category == 'Deconvolved':
                 figs[i].reconfigure('THRESH_TYPE','ABSOLUTE')
-                figs[i].reconfigure('DETECT_THRESH',25.0)
+                figs[i].reconfigure('DETECT_THRESH',np.mean(fits.getdata(img1.filename))+0.05*np.std(fits.getdata(img1.filename)))
                 figs[i].reconfigure('BACK_TYPE','MANUAL')
                 figs[i].reconfigure('BACK_VALUE',0.0)
                 #print '\nSetting detection threshold = {0}'.format(figs[i].config_dict['DETECT_THRESH'])
                 #print 'Turning off background estimation/subtraction\n'
             
             if img.category == 'Coadded':
-                print '\nSetting DETECT_THRESH = 1.0 for co-added image\n'
                 figs[i].reconfigure('THRESH_TYPE','ABSOLUTE')
-                figs[i].reconfigure('DETECT_THRESH',25.0)
+                figs[i].reconfigure('DETECT_THRESH',np.mean(fits.getdata(img1.filename))+0.05*np.std(fits.getdata(img1.filename)))
                 figs[i].reconfigure('BACK_TYPE','MANUAL')
                 figs[i].reconfigure('BACK_VALUE',0.0)
         
         # Write configuration files
-        fig1.write_config_file(new_config_file='copy_compare1.sex',new_param_file='copy_compare1.param')
-        fig2.write_config_file(new_config_file='copy_compare2.sex',new_param_file='copy_compare2.param')
+        fig1.write_config_file(new_config_file='copy_compare1_{0}{1}.sex'.format(img1.category,img1.ID),new_param_file='copy_compare1.param')
+        fig2.write_config_file(new_config_file='copy_compare2_{0}{1}.sex'.format(img2.category,img2.ID),new_param_file='copy_compare2.param')
         
         # =======================================================================
         # Compare images in SExtractor
@@ -175,7 +214,7 @@ for img1 in comparisonImages:
         pysex.compare(img1.filename,img2.filename,'copy_compare1.sex','copy_compare2.sex',masked_image_file1=img1.masked)
         
         # =======================================================================
-        # Retrieve data from output catalogs        
+        # Retrieve data from output catalogs
         
         # Get image tags
         img_tag1 = (os.path.split(img1.filename)[1])
@@ -183,7 +222,7 @@ for img1 in comparisonImages:
         img_tag2 = (os.path.split(img2.filename)[1])
         img_tag2 = img_tag2[0:len(img_tag2)-len('.fits')]
         
-        print '\nImage tags: {0}, {1}'.format(img_tag1,img_tag2)   
+        print '\nImage tags: {0}, {1}'.format(img_tag1,img_tag2)
         
         outputCat1 = os.path.join(os.getcwd(),'Results',img_tag1+'_'+img_tag1+'_compare.cat')
         if not os.path.exists(outputCat1):
@@ -223,15 +262,19 @@ for img1 in comparisonImages:
         print 'Length of rads1,rads2: ',len(rads1),' ',len(rads2)        
         
         # Handling negative radii (which result from noisy detection or measurement images, accroding to Emmanuel Bertin, creator of SExtractor)
-        neg_inds1 = np.where(rads1 < 0.0)[0] # Where rads1 is negative
-        neg_inds2 = np.where(rads2 < 0.0)[0] # Where rads2 is negative
+        neg_inds1 = np.where(rads1 <= 0.0)[0] # Where rads1 is negative
+        neg_inds2 = np.where(rads2 <= 0.0)[0] # Where rads2 is negative
         neg_inds = np.intersect1d(neg_inds1,neg_inds2) # Where both arrays are negative
+        
+        print len(neg_inds)
+        
         # Radii array = rads1 (default)
         rads = rads1
-        for i in neg_inds:
-            rads[i] = np.mean(rads1[i]) # rads = mean(rads1) where both rads1 and rads2 are negative
         for i in neg_inds1:
             rads[i] = rads2[i] # rads = rads2 where rads1 is negative
+        for i in neg_inds:
+            #print 'Negative radius value found - replacing with mean object radius'
+            rads[i] = np.mean(rads1) # rads = mean(rads1) where both rads1 and rads2 are negative
         
         imageData1,imageData2 = fits_tools.getPixels(img1.filename),fits_tools.getPixels(img2.filename)
         
@@ -259,6 +302,20 @@ for img1 in comparisonImages:
             flux1[i] = fits_tools.computeObjectFlux(x[i],y[i],rads[i],imageData1) # When computing, use original (non-masked) images
             flux2[i] = fits_tools.computeObjectFlux(x[i],y[i],rads[i],imageData2)
         
+        '''
+        # Normalizing flux values
+        # (Set mean flux of 5 brightest stars in image 2 equal to mean of 5 brightest stars in image 1)
+        bright_star_mean1 = np.mean((np.sort(flux1)[::-1])[0:5])
+        bright_star_mean2 = np.mean((np.sort(flux2)[::-1])[0:5])
+        flux_scaling_coeff = bright_star_mean1/bright_star_mean2
+        flux2 = flux2*flux_scaling_coeff
+        
+        print 'Flux scaling coefficient'
+        print flux_scaling_coeff        
+        
+        imageData2 = imageData2*flux_scaling_coeff
+        #'''        
+        
         print 'Length of flux1 and flux2: ',len(flux1),' ',len(flux2)
         #print flux1,flux2
         # Compute object-wise flux ratio
@@ -267,13 +324,61 @@ for img1 in comparisonImages:
         fluxRatio = log_fluxRatio # Note that from here on, "flux ratio" = ln(f1/f2)
         #print fluxRatio
         naninds = np.where(np.isnan(fluxRatio))[0]
-        print rads1[naninds]
-        print rads2[naninds]
-        print flux1[naninds]
-        print flux2[naninds]
-        print fluxRatio[naninds]
+        #print naninds
+        #print rads1[naninds]
+        #print rads2[naninds]
+        #print flux1[naninds]
+        #print flux2[naninds]
+        #print fluxRatio[naninds]
         
-        # =======================================================================
+        '''
+        print '\nDeleting all NaN values from data'
+        for i in range(len(naninds)):
+            rads1 = np.delete(rads1,naninds[i])
+            rads2 = np.delete(rads2,naninds[i])
+            flux1 = np.delete(flux1,naninds[i])
+            flux2 = np.delete(flux2,naninds[i])
+            fluxRatio = np.delete(fluxRatio,naninds[i])
+        '''
+        x = np.delete(x,naninds)
+        y = np.delete(y,naninds)
+        rads1 = np.delete(rads1,naninds)
+        rads2 = np.delete(rads2,naninds)
+        flux1 = np.delete(flux1,naninds)
+        flux2 = np.delete(flux2,naninds)
+        fluxRatio = np.delete(fluxRatio,naninds)
+        
+        # Scaling flux1 with flux2 to eliminate offset in ln(flux1) vs. ln(flux2)  
+        S = np.sum(np.multiply(flux1,flux2))/np.sum(np.multiply(flux2,flux2))
+        temp = S*flux2
+        flux2 = temp
+        
+        '''
+        # Removing low outlier in flux2 for SDSS co-add vs. Custom median co-add
+        for i in range(2):
+            min_ind = np.argmin(np.log(flux2))
+            print min_ind
+            flux1,flux2 = np.delete(flux1,min_ind),np.delete(flux2,min_ind)
+            x,y = np.delete(x,min_ind),np.delete(y,min_ind)
+            rads1,rads2 = np.delete(rads1,min_ind),np.delete(rads2,min_ind)
+        #'''
+        
+        # ========================================================================
+        # Statistical analysis of ln(flux1) vs. ln(flux2)
+        '''
+        from scipy.stats import linregress
+        a1,a0,rval,pval,stderr = linregress(np.log(flux2),y=(np.log(flux1) - np.log(flux2)))
+        print 'Slope (a1) and intercept (a0) of linear fit to ln(flux1) - ln(flux2): a1 = {}, a0 = {}'.format(str(a1)[0:7],str(a0)[0:7])
+        print 'Should be a1 = 0, a0 = 0'
+        print 'p-value of linear fit: {}'.format(str(pval)[0:8])
+        #'''
+        
+        import LinearRegressionAnalysis as LinReg
+        
+        linreg_results_file = os.path.join(new_dir,'LinRegResults.txt')
+        LinReg.analyze(np.log(flux2),np.log(flux1),linreg_results_file)
+        
+         # =======================================================================
         """
         # Looking at flux ratio outliers in deconvolved vs. co-added
         outliers = {}
@@ -364,7 +469,7 @@ for img1 in comparisonImages:
         # =======================================================================
         # Splitting up data into N different brightness regimes
                 
-        N = 4 # Number of brightness regimes (each corresponding to adjacent partitions of width b*std(flux1) of the flux1 distribution; final partition is all points greater than (N-1)*std(flux1))
+        N = 6 # Number of brightness regimes (each corresponding to adjacent partitions of width b*std(flux1) of the flux1 distribution; final partition is all points greater than (N-1)*std(flux1))
         
         '''b = 0.05 # Controls width of partitions
         regimes = {}
@@ -379,14 +484,14 @@ for img1 in comparisonImages:
         regimes[N].extend(inds)
         #'''
         
-        inds_unsorted = np.arange(len(flux1))
-        flux1_sorted,inds_sorted = zip(*sorted(zip(flux1,inds_unsorted)))
-        L = len(flux1)
+        inds_unsorted = np.arange(len(flux2))
+        flux2_sorted,inds_sorted = zip(*sorted(zip(flux2,inds_unsorted)))
+        L = len(flux2)
         bin_size = L/N
     
         regimes = {}
         regimes[0] = []
-        inds = np.arange(len(flux1))
+        inds = np.arange(len(flux2))
         regimes[0].extend(inds) # Oth regime corresponds to original (full) dataset
         for i in range(N-1):
             regimes[i+1] = []
@@ -435,7 +540,7 @@ for img1 in comparisonImages:
         fluxRatio_og,x_og,y_og = fluxRatio,x,y
         flux1_og,flux2_og = flux1,flux2
         for i in range(N+1):
-            
+
             fluxRatio = fluxRatio_og[regimes[i]]
             x,y = x_og[regimes[i]],y_og[regimes[i]]
             flux1,flux2 = flux1_og[regimes[i]],flux2_og[regimes[i]]
@@ -463,10 +568,14 @@ for img1 in comparisonImages:
                 plt.close()
                 
             # Creating scatter plot of ln(flux1) vs. ln(flux2)
+            from scipy.stats import linregress as linreg
+            slope, intercept, r_value, p_value, std_err = linreg(np.log(flux2),np.log(flux1))
+            print 'Slope = {0}; Intercept = {1}'.format(slope,intercept)
             cmap = cm.get_cmap('rainbow')
             plt.scatter(np.log(flux2),np.log(flux1),c=y,cmap=cmap,alpha=0.85,linewidths=0.0)
             X = np.linspace(0.0,np.max(np.log(flux2_og))+2.0,1000.0)
-            plt.plot(X,X)
+            plt.plot(X,X,'g')
+            plt.plot(X,slope*X + intercept,'m',linewidth=0.5)
             plt.colorbar()
             plt.axis([0.0,np.max(np.log(flux2_og))+1.0,0.0,np.max(np.log(flux1_og))+1.0])
             plt.xlabel('ln(flux2): '+img2.category+img2.ID)
@@ -637,5 +746,5 @@ for img1 in comparisonImages:
                     plt.close()
                 else:
                     plt.close()
-    #break # Break to only detect from first image, measure from second image
+    #break # Break to detect only from first image
                 

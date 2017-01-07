@@ -73,7 +73,8 @@ def maskImage(image_file,mask_file,masked_image_file=None,Return=False):
     
     image = fits.getdata(image_file)
     mask = fits.getdata(mask_file)
-    masked_image = applyMask(image,mask)
+    masked_image = np.multiply(image,mask)
+    
     inds = np.where(masked_image == 0.0)
     masked_image[inds] += 1e-12 # Prevent NaNs
     

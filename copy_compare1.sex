@@ -1,4 +1,4 @@
-CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/CheckImages/Coadded_Custom_Mean_copy_Coadded_Custom_Mean_copy_compare_NONE.fits
+CHECKIMAGE_NAME /Users/annepstein/Work/Deconv/Results/CheckImages/Coadded_Custom_Median_copy_Coadded_Custom_Median_copy_compare_NONE.fits
 PARAMETERS_NAME /Users/annepstein/Work/Deconv/copy_compare1.param
 ANALYSIS_THRESH 1.5
 SATUR_KEY SATURATE
@@ -17,9 +17,9 @@ PHOT_FLUXFRAC 0.8
 BACK_TYPE MANUAL
 ASSOC_PARAMS 2,3,4
 DEBLEND_MINCONT 0.005
-CATALOG_NAME /Users/annepstein/Work/Deconv/Results/Coadded_Custom_Mean_copy_Coadded_Custom_Mean_copy_compare.cat
+CATALOG_NAME /Users/annepstein/Work/Deconv/Results/Coadded_Custom_Median_copy_Coadded_Custom_Median_copy_compare.cat
 FLAG_IMAGE flag.fits
-DETECT_THRESH 1.4063959943e+13
+DETECT_THRESH 43.5463046646
 CATALOG_TYPE ASCII_HEAD
 SATUR_LEVEL 200000.0
 STARNNW_NAME default.nnw

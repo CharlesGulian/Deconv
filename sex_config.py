@@ -129,7 +129,7 @@ class configure:
         else:
             self.reconfigure('CATALOG_NAME',os.path.join(curr_dir,'Results',(img_tag+'.cat')))
             self.reconfigure('CHECKIMAGE_NAME',os.path.join(curr_dir,'Results',(img_tag+'_'+self.config_dict['CHECKIMAGE_TYPE']+'.fits')))   
-        
+        #'''
         # Finding and applying binary mask file to image
         MASK = False
         if self.dual:
@@ -148,3 +148,4 @@ class configure:
         self.reconfigure('BACK_SIZE',220.0)
         # Adjust PHOT_FLUXFRAC
         self.reconfigure('PHOT_FLUXFRAC',0.8) # Change from 0.8 to 0.6?
+        #'''

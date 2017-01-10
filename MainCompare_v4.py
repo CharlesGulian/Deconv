@@ -61,7 +61,7 @@ if (np.shape(deconvolvedImageData) != (1600,1600)) and TRIM:
                                                         padSize[1]/2:np.shape(deconvolvedImageData)[1]-padSize[1]/2]
     temp = (deconvolvedImage.filename).replace('.fits','_trimmed.fits')
     fits.writeto(temp,deconvolvedImageData_trimmed,fits.getheader(deconvolvedImage.filename),clobber=True)
-    deconvolvedImage = Image(temp,'Deconvolved','')
+    deconvolvedImage = Image(temp,'Deconvolved','Deconvolved')
     
 # ===============================================================================
     
@@ -85,7 +85,7 @@ for img1 in comparisonImages:
         # ===============================================================================
         # Make directory to save results and figures to different comparison categories (Good vs. Good, Good vs. Deconvolved, etc.)
         #image1,image2 = img1.filename,img2.filename # Get image filenames
-        new_dir = os.path.join(curr_dir,'Figures','Dec16',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
+        new_dir = os.path.join(curr_dir,'Figures','Jan7',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
         if not os.path.exists(new_dir):
             os.mkdir(os.path.join(new_dir))
             
@@ -670,6 +670,45 @@ for img1 in comparisonImages:
                 plt.close()
             else:
                 plt.close()
+                
+            # Creatng scatter plot of ln(rads2) vs. ln(rads1)
+            rad_ratio = np.divide(rads1,rads2) # for next plot
+            rads1,rads2 = np.log(rads1),np.log(rads2)
+            slope, intercept, r_value, p_value, std_err = linreg(rads1,rads2)
+            X = np.linspace(0.0,np.max([np.max(rads1),np.max(rads2)])+1.0,1000.0)
+            cmap = cm.get_cmap('rainbow')
+            plt.scatter(rads1,rads2,c=y,alpha=0.85,linewidths=0.0)
+            plt.plot(X,X,'k')
+            plt.plot(X,slope*X+intercept,'m',linewidth=0.5)
+            plt.axis([0.0,np.max(rads1)+1.0,0.0,np.max(rads2)+1.0])
+            plt.xlabel('Log of aperture radius of detection image')
+            plt.ylabel('Log of aperture radius of measurement image')
+            plt.title('Scatter plot of rads1 vs. rads2')
+            SAVE = True
+            if SAVE:
+                plt.savefig(os.path.join(new_dir,'log_rads2_rads1_scatter_{}.png'.format('regime'+str(i))))
+                plt.close()
+            else:
+                plt.close()
+                
+            # Creatng scatter plot of rads1/rads2 vs. y-coordinate
+            rad_ratio = rad_ratio
+            slope, intercept, r_value, p_value, std_err = linreg(y,rad_ratio)
+            X = np.linspace(0.0,np.max([np.max(y),np.max(rad_ratio)])+1.0,1000.0)
+            #cmap = cm.get_cmap('rainbow')
+            plt.scatter(y,rad_ratio,c='b',alpha=0.85,linewidths=0.0)
+            #plt.plot(X,X,'k')
+            plt.plot(X,slope*X+intercept,'m',linewidth=0.5)
+            plt.axis([0.0,np.max(y)+1.0,0.0,np.max(rad_ratio)+1.0])
+            plt.xlabel('Image Y-coordinate (pixels)')
+            plt.ylabel('Aperture radii ratio')
+            plt.title('Scatter plot of rads1/rads2 vs. y-coordinate')
+            SAVE = True
+            if SAVE:
+                plt.savefig(os.path.join(new_dir,'rad_ratio_y_scatter_{}.png'.format('regime'+str(i))))
+                plt.close()
+            else:
+                plt.close()
             
             # Creating color plot of object-wise flux ratio
             cmap = cm.get_cmap('rainbow')
@@ -691,7 +730,9 @@ for img1 in comparisonImages:
             else:
                 plt.close()
                 
-        
+            fits_tools.binImage(i)
+                        
+            
             '''
             # Creating histogram of object-wise flux ratio for 4x4 bins
             m,n = 4,4

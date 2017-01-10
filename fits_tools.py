@@ -29,7 +29,7 @@ def binImage(pixelArray,M=3,N=3):
     
     for i in range(M):
         for j in range(N):
-            imgBinDict[i,j] = pixels[int(np.ceil(i*xBinSize)):int(np.floor((i+1)*xBinSize)),\
+            imgBinDict[i+1,j+1] = pixels[int(np.ceil(i*xBinSize)):int(np.floor((i+1)*xBinSize)),\
                                     int(np.ceil(j*yBinSize)):int(np.floor((j+1)*yBinSize))]
             #print ''
             #print 'Bin: ',i,j

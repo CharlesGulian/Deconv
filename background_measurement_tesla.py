@@ -6,6 +6,8 @@ Created on Sat Jan  7 18:45:14 2017
 """
 
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import fits_tools
 from astropy.io import fits

@@ -12,7 +12,7 @@ import glob
 import numpy as np
 from astropy.io import fits
 import matplotlib.pyplot as plt
-import fits_tools as tools
+#import fits_tools as tools
 
 # ===============================================================================
 # Getting image file paths for co-add frames
@@ -23,6 +23,13 @@ image_files = glob.glob(os.path.join(image_dir,'*alignCropped.fits'))
 image_files.remove('/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4927-x4127-y118_stitched_alignCropped.fits')
 
 #print image_files
+all_image_files = os.path.join(os.getcwd(),'imagelist.txt')
+with open(all_image_files,'w') as f:
+    f.write('# Complete list of images \n')
+    f.write('\n')
+    for i in image_files:
+	f.write('{} \n'.format(i))
+
 
 #print type(image_files)
 #print image_files[0:5]
@@ -93,6 +100,10 @@ print og_files
 print len(og_files)
 print len(bad_image_files)
 print len(image_files)
- 
-for i in bad_image_files:
-    print i
+
+missing_keyword_files = os.path.join(os.getcwd(),'missing_keyword_imagelist.txt')
+with open(missing_keyword_files,'w') as g:
+    g.write('# List of images with missing header keywords \n')
+    g.write('\n')
+    for i in bad_image_files:
+        g.write('{} \n'.format(i))

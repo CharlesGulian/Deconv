@@ -73,11 +73,13 @@ for m in range(len(image_files)):
             y_values[i] = y_value
             
         plt.plot(y_values,points,color=colors[k],alpha=alphas[k],linewidth=linewidths[k])
+    plt.axis([0.0,1600.0,0.0,2.0])
     plt.title('Normalized Background Value vs. Y-coordinate')
     plt.xlabel('Image Y-coordinate (pixels)')
     plt.ylabel('Normalized Background Value')
     slope, intercept, r_value, p_value, std_err = linreg(y_values,points)
     plt.plot(y_values,slope*y_values + intercept,'r--',linewidth=2.0)
+    plt.figtext(.65,.85,'p-value = {}'.format(p_value))
     plt.savefig(os.path.join(new_dir,'Background','Data','normalized_background_value_vs_y_linreg_{}.png'.format(image_tag)))
     plt.close()
     

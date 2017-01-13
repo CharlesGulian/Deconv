@@ -17,7 +17,7 @@ import os
 
 os.chdir('/home/cgulian2/Deconv')
 curr_dir = os.getcwd()
-new_dir = os.path.join(curr_dir,'Figures','Jan9')
+new_dir = os.path.join(curr_dir,'Figures','Jan12')
 
 # ===============================================================================
 # Get images from directory

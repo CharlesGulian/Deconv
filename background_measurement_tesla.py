@@ -23,9 +23,9 @@ new_dir = os.path.join(curr_dir,'Figures','Jan9')
 # Get images from directory
 
 # Image directory:
-image_dir = '/home/DATA/STRIPE82_330-360_AlignCropped/test7'
+image_dir = '/home/DATA/charlie/STRIPE82_330-360_AlignCropped/test7'
 image_files = glob.glob(os.path.join(image_dir,'*alignCropped.fits'))
-image_files.remove('/home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4927-x4127-y118_stitched_alignCropped.fits')
+#image_files.remove('/home/DATA/charlie/STRIPE82_330-360_AlignCropped/test7/fpC-4927-x4127-y118_stitched_alignCropped.fits')
     
 # ===============================================================================
 # Mask sources; measure background
@@ -49,6 +49,19 @@ for m in range(len(image_files)):
     tag = image_tag[0:8]
     
     imageData = fits.getdata(image_file)
+    header = fits.getheader(image_file)
+    try:
+        flux20 = header['flux20']
+        sky = header['sky']
+        softbias = header['softbias']
+    except KeyError:
+        print 'Error: Missing keyword in image header'
+	continue
+
+    alpha = 1e-8/(flux20)
+    flux = alpha*(imageData - softbias - sky)
+    imageData = flux
+
     mask = create_mask(imageData)
     temp = imageData*mask
     imageData = temp

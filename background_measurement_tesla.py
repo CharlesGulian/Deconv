@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import fits_tools
+import fits_tools_tesla as fits_tools
 from astropy.io import fits
 from scipy.stats import linregress as linreg
 import glob
@@ -17,7 +17,7 @@ import os
 
 os.chdir('/home/cgulian2/Deconv')
 curr_dir = os.getcwd()
-new_dir = os.path.join(curr_dir,'Figures','Jan12')
+new_dir = os.path.join(curr_dir,'Figures','Jan20')
 
 # ===============================================================================
 # Get images from directory

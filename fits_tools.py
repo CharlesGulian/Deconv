@@ -13,8 +13,8 @@ from astropy.io import fits
 import matplotlib.pyplot as plt
 import matplotlib
 
-#from photutils import aperture_photometry
-#from photutils import CircularAperture
+from photutils import aperture_photometry
+from photutils import CircularAperture
 
 def binImage(pixelArray,M=3,N=3):
     '''

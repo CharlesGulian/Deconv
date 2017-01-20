@@ -49,12 +49,12 @@ def create_mask(imageData):
     mask = np.ones(np.shape(imageData))
     
     # Define indices where image pixel values are greater than 5-sigma threshold
-    inds = np.where(imageData >= np.mean(imageData) + 0.05*np.std(imageData))
+    inds = np.where(imageData >= np.mean(imageData) + 0.01*np.std(imageData))
     # Set mask = 1.0 at these indices, save mask to new file
     mask[inds] = 0.0
     return mask
 
-image = coaddedImage1
+image = deconvolvedImage
 imageData = fits.getdata(image.filename)
 mask = create_mask(imageData)
 temp = imageData*mask
@@ -62,7 +62,7 @@ imageData = temp
 
 imageSum = np.sum(imageData)
 M = 1
-N_list = [40,160,1600]
+N_list = [16,64,800]
 linewidths = [12.0,5.0,0.5]
 alphas = [0.3,0.4,0.5]
 colors = ['y','g','b']
@@ -73,28 +73,30 @@ for k in range(len(N_list)):
     y_values = np.zeros(N)
     for i in range(N):
         imgBin = imgBinDict[M,i+1]
-        point = (np.sum(imgBin)*N)/imageSum
+        #print np.where(imgBin < 0.0)
+        #point = (np.sum(imgBin)*N)/imageSum
+        point = np.sum(imgBin)/len(np.where(imgBin != 0.0)[0])
         points[i] = point
     
         y_value = (1600./N)*(i+0.5)
         y_values[i] = y_value
         
     plt.plot(y_values,points,color=colors[k],alpha=alphas[k],linewidth=linewidths[k])
-plt.title('Normalized Background Value vs. Y-coordinate')
+plt.title('Local Background Value vs. Y-coordinate')
 plt.xlabel('Image Y-coordinate (pixels)')
-plt.ylabel('Normalized Background Value')
+plt.ylabel('Local Mean Background Value')
 
 
 # ===============================================================================
 # Save data
 curr_dir = os.getcwd()
-new_dir = os.path.join(curr_dir,'Figures','Jan9')
+new_dir = os.path.join(curr_dir,'Figures','Jan20')
 #plt.savefig(os.path.join(new_dir,'normalized_background_value_vs_y.png'))
 
 # Create and save new plot with best-fit line
 slope, intercept, r_value, p_value, std_err = linreg(y_values,points)
 plt.plot(y_values,slope*y_values + intercept,'r--',linewidth=2.0)
-plt.savefig(os.path.join(new_dir,'Background','Data','normalized_background_value_vs_y_linreg{}.png'.format(image.ID)))
+plt.savefig(os.path.join(new_dir,'Background','Data','mean_background_value_vs_y_linreg{}.png'.format(image.ID)))
 plt.close()
 
 print p_value

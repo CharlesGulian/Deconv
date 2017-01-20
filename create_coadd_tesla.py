@@ -33,16 +33,16 @@ print image_files
 # Computing flux scaling coefficient (alpha) for all images
 
 alpha_array = []
-s_array = []
+sky_array = []
 for i in range(len(image_files)):
     image_file = image_files[i]
     header = fits.getheader(image_file)
-    c20 = header['flux20']
-    b = header['softbias']
-    s = header['sky']
-    alpha = (1e-8)/(c20 - b - s)
+    flux20 = header['flux20']
+    bias = header['softbias']
+    sky = header['sky']
+    alpha = (1e-8)/(flux20)
     alpha_array.append(alpha)
-    s_array.append(s)
+    sky_array.append(sky)
 del(header)
 # ===============================================================================
 # Generating co-add
@@ -148,7 +148,7 @@ for i in range(M):
                 # Create vector for (v,w)th pixel of each image
                 pixel_vector = []
                 for p in range(len(image_files)):
-                    pixel = alpha_array[p]*(imageBin_dict[p][v,w] - 1000.0 - s_array[p])
+                    pixel = alpha_array[p]*(imageBin_dict[p][v,w] - 1000.0 - sky_array[p])
                     pixel_vector.append(pixel)
 		coadd_pixel = op(pixel_vector)
 		coadd_bin[v,w] = coadd_pixel

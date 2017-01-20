@@ -68,7 +68,7 @@ for m in range(len(image_files)):
     
     imageSum = np.sum(imageData)
     M = 1
-    N_list = [40,160,1600]
+    N_list = [16,64,800]
     linewidths = [12.0,5.0,0.5]
     alphas = [0.3,0.4,0.5]
     colors = ['y','g','b']
@@ -79,9 +79,11 @@ for m in range(len(image_files)):
         y_values = np.zeros(N)
         for i in range(N):
             imgBin = imgBinDict[M,i+1]
-            point = (np.sum(imgBin)*N)/imageSum
+            #point = (np.sum(imgBin)*N)/imageSum
+            #points[i] = point
+            point = np.sum(imgBin)/len(np.where(imgBin != 0.0)[0])
             points[i] = point
-        
+
             y_value = (1600./N)*(i+0.5)
             y_values[i] = y_value
             

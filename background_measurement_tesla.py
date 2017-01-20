@@ -88,7 +88,7 @@ for m in range(len(image_files)):
             y_values[i] = y_value
             
         plt.plot(y_values,points,color=colors[k],alpha=alphas[k],linewidth=linewidths[k])
-    plt.axis([0.0,1600.0,0.5,1.5])
+    plt.axis([0.0,1600.0,np.min(points),np.max(points)])
     plt.title('Normalized Background Value vs. Y-coordinate')
     plt.xlabel('Image Y-coordinate (pixels)')
     plt.ylabel('Normalized Background Value')

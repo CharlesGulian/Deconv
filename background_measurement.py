@@ -54,7 +54,7 @@ def create_mask(imageData):
     mask[inds] = 0.0
     return mask
 
-image = deconvolvedImage
+image = coaddedImage2
 imageData = fits.getdata(image.filename)
 mask = create_mask(imageData)
 temp = imageData*mask

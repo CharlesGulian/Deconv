@@ -85,7 +85,7 @@ for img1 in comparisonImages:
         # ===============================================================================
         # Make directory to save results and figures to different comparison categories (Good vs. Good, Good vs. Deconvolved, etc.)
         #image1,image2 = img1.filename,img2.filename # Get image filenames
-        new_dir = os.path.join(curr_dir,'Figures','Jan7',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
+        new_dir = os.path.join(curr_dir,'Figures','Feb23',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
         if not os.path.exists(new_dir):
             os.mkdir(os.path.join(new_dir))
             
@@ -216,6 +216,7 @@ for img1 in comparisonImages:
                 figs[i].reconfigure('BACK_VALUE',0.0)
                 #print '\nSetting detection threshold = {0}'.format(figs[i].config_dict['DETECT_THRESH'])
                 #print 'Turning off background estimation/subtraction\n'
+                figs[i].reconfigure('PHOT_FLUXFRAC',0.4)
             
             if img.category == 'Coadded':
                 figs[i].reconfigure('THRESH_TYPE','ABSOLUTE')
@@ -223,6 +224,7 @@ for img1 in comparisonImages:
                 #figs[i].reconfigure('DETECT_THRESH',1.4063959943e+13)
                 figs[i].reconfigure('BACK_TYPE','MANUAL')
                 figs[i].reconfigure('BACK_VALUE',0.0)
+                figs[i].reconfigure('PHOT_FLUXFRAC',0.4)
         
         # Write configuration files
         #fig1.write_config_file(new_config_file='copy_compare1_{0}{1}.sex'.format(img1.category,img1.ID),new_param_file='copy_compare1.param')
@@ -616,7 +618,27 @@ for img1 in comparisonImages:
                 plt.close()
             else:
                 plt.close()
-                
+            
+            # Creating scatter plot of ln(flux ratio) vs. y-coordinate
+            slope, intercept, r_value, p_value, std_err = linreg(y,np.log(fluxRatio))
+            X = np.linspace(0.0,1600.0,1000.0)
+            #cmap = cm.get_cmap('rainbow')
+            plt.scatter(y,np.log(fluxRatio),c='b',alpha=0.85,linewidths=0.0)
+            #plt.plot(X,X,'k')
+            plt.plot(X,slope*X+intercept,'m',linewidth=0.5)
+            plt.axis([0.0,1600.0,np.min(np.log(fluxRatio_og)),np.max(np.log(fluxRatio_og))])
+            plt.xlabel('Image Y-coordinate (pixels)')
+            plt.ylabel('ln(Flux Ratio)')
+            plt.title('Scatter plot of Log Flux Ratio vs. Y-Coordinate')
+            SAVE = True
+            if SAVE:
+                plt.savefig(os.path.join(new_dir,'fluxRatio_y_scatter_{}.png'.format('regime'+str(i))))
+                plt.close()
+            else:
+                plt.close()            
+            
+            
+            '''
             # Creating scatter plot of aperture radius vs. y-coordinate
             inds = np.where(rads <= 8.0)[0]
             slope, intercept, r_value, p_value, std_err = linreg(y[inds],rads[inds])
@@ -634,7 +656,7 @@ for img1 in comparisonImages:
                 plt.close()
             else:
                 plt.close()
-                
+            
             # Creating scatter plot of aperture area vs. y-coordinate
             inds = np.where(rads <= 8.0)[0]
             areas = np.pi*np.power(rads,2.0)
@@ -653,7 +675,7 @@ for img1 in comparisonImages:
                 plt.close()
             else:
                 plt.close()
-                
+  
             # Creatng scatter plot of rads2 vs. rads1
             slope, intercept, r_value, p_value, std_err = linreg(rads1,rads2)
             X = np.linspace(0.0,np.max([np.max(rads1),np.max(rads2)])+1.0,1000.0)
@@ -690,7 +712,7 @@ for img1 in comparisonImages:
                 plt.close()
             else:
                 plt.close()
-                
+            
             # Creatng scatter plot of rads1/rads2 vs. y-coordinate
             rad_ratio = rad_ratio
             slope, intercept, r_value, p_value, std_err = linreg(y,rad_ratio)
@@ -709,6 +731,7 @@ for img1 in comparisonImages:
                 plt.close()
             else:
                 plt.close()
+            '''
             
             # Creating color plot of object-wise flux ratio
             cmap = cm.get_cmap('rainbow')
@@ -729,8 +752,6 @@ for img1 in comparisonImages:
                 plt.close()
             else:
                 plt.close()
-                
-            fits_tools.binImage(i)
                         
             
             '''

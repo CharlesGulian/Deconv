@@ -1,0 +1,28 @@
+# Linear regression analysis results
+# We subtract the line y = x from the data and perform linear regression on the residuals to test the null hypothesis that the slope of data is = 1
+# Columns: Slope | Intercept | r-value | p-value 
+
+# (0) Results for data in x-axis interval 11.1022719455:8.65856849891 (n=316)
+-0.606200222584 4.49283275401 -0.774360130606 2.23418120434e-64
+# Statistically significant deviation from slope of 1.0
+
+# (1) Results for data in x-axis interval -16.2819089955:6.41446671619 (n=51)
+-1.07365131 6.39769519651 -0.988023178356 1.95139827886e-41
+# Statistically significant deviation from slope of 1.0
+
+# (2) Results for data in x-axis interval 6.41546204673:7.00433714439 (n=51)
+-0.0622002562177 0.0278100385054 -0.0247752782909 0.862988677579
+
+# (3) Results for data in x-axis interval 7.0110046886:7.46892847591 (n=51)
+0.0245979968809 -0.760313229822 0.00918874037834 0.948974028972
+
+# (4) Results for data in x-axis interval 7.47744631265:8.20195303007 (n=51)
+0.305751065165 -2.86011934953 0.226222060295 0.110428960982
+
+# (5) Results for data in x-axis interval 8.21033608796:9.13886659945 (n=51)
+0.175592666654 -1.98975195146 0.155874655467 0.2747170953
+
+# (6) Results for data in x-axis interval 9.2588034629:12.1400350453 (n=56)
+0.287230224186 -3.29622483391 0.736359705698 9.95192480332e-11
+# Statistically significant deviation from slope of 1.0
+

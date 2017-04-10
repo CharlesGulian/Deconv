@@ -22,6 +22,7 @@ for line in n:
     #fits_hdr = hdulist[0].header
     #hdulist.close()
     
+    #f = open(os.path.join(dir_name,'catalog.cat','r')) # changed for testing
     f = open(dir_name+'/Results/'+img_tag+'.cat','r')
     lines = f.readlines()
     cat_hdr_size = len(lines[len(lines)-1].split()) # Catalog header size; number of output columns in default.param
@@ -62,3 +63,5 @@ for line in n:
     g.close()
     
 #print os.getcwd()
+    
+    

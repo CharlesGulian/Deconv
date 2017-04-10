@@ -36,3 +36,4 @@ for image_file in dataDict.iterkeys():
 #'aa_r	kk_r	airmass_r sky_r	run	rerun	 camcol	field'
 
 #Sample image name: fpC-006504-r2-0250.fit
+

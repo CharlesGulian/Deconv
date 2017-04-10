@@ -50,5 +50,5 @@ for i in range(4):
     header['CUT_X'] = x
     header['CUT_Y'] = y    
     
-    #its.writeto(cutout_image_file,img,header=header,clobber=True)
+    #fits.writeto(cutout_image_file,img,header=header,clobber=True)
     

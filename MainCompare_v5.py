@@ -50,23 +50,14 @@ coaddedImage2 = Image('AstroImages/Coadd/custom_coadd_median.fits','Coadded','_C
 coaddedImage3 = Image('AstroImages/Coadd/custom_coadd_mean.fits','Coadded','_Custom_Mean')
 
 # Deconvolved image
-deconvolvedImage = Image('AstroImages/Deconvolved/deconv.fits','Deconvolved','Deconvolved')
-# Trimming deconvolved image to 1600x1600
-deconvolvedImageData = fits_tools.getPixels(deconvolvedImage.filename)
-TRIM = True
-if (np.shape(deconvolvedImageData) != (1600,1600)) and TRIM:
-    print 'Trimming deconvolved image'
-    padSize = np.array(list(np.shape(deconvolvedImageData))) - np.array([1600,1600])
-    deconvolvedImageData_trimmed = deconvolvedImageData[padSize[0]/2:np.shape(deconvolvedImageData)[0]-padSize[0]/2,
-                                                        padSize[1]/2:np.shape(deconvolvedImageData)[1]-padSize[1]/2]
-    temp = (deconvolvedImage.filename).replace('.fits','_trimmed.fits')
-    fits.writeto(temp,deconvolvedImageData_trimmed,fits.getheader(deconvolvedImage.filename),clobber=True)
-    deconvolvedImage = Image(temp,'Deconvolved','Deconvolved')
+deconvolvedImage1 = Image('AstroImages/Deconvolved/deconv.fits','Deconvolved','Deconvolved')
+deconvolvedImage2 = Image('AstroImages/Deconvolved/normal_deconv.fits','Deconvolved','Normal')
+deconvolvedImage3 = Image('AstroImages/Deconvolved/transposed_deconv.fits','Deconvolved','Transposed')
     
 # ===============================================================================
     
 # List of images to be compared:
-comparisonImages = [coaddedImage2,deconvolvedImage]
+comparisonImages = [coaddedImage2,deconvolvedImage3]
 
 # ===============================================================================
 # Image comparisons:
@@ -81,7 +72,7 @@ for img1 in comparisonImages:
         
         # ===============================================================================
         # Make directory to save results and figures to different comparison categories (Coadded vs. Coadded, Coadded vs. Deconvolved, etc.)
-        new_dir = os.path.join(curr_dir,'Figures','Jan23',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
+        new_dir = os.path.join(curr_dir,'Figures','Apr10',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
         if not os.path.exists(new_dir):
             os.mkdir(os.path.join(new_dir))
             
@@ -90,7 +81,8 @@ for img1 in comparisonImages:
             
         imgs = [img1,img2]
         for i,img in enumerate(imgs):
-        
+            
+            # Preliminary data cleaning
             if (img.category == 'Good') or (img.category == 'Bad'):
                 # Subtract median from single frames     
                 temp = img.filename.replace('.fits','_medSub.fits')
@@ -100,12 +92,12 @@ for img1 in comparisonImages:
                 temp = img.filename.replace('.fits','_normed.fits')
                 imageData = fits.getdata(img.filename)
                 header = fits.getheader(img.filename)
-                S = header['pixel_scale_factor']
+                S = header['PIXSCALE']
                 try: 
-                    S = header['pixel_scale_factor']
+                    S = header['PIXSCALE']
                 except KeyError:
                     fits_tools.write_scaling_factor(img)
-                    S = header['pixel_scale_factor']
+                    S = header['PIXSCALE']
                 imageData = S*imageData
                 fits.writeto(temp,imageData,header=header,clobber=True)
                 del(imageData,header,S)
@@ -124,7 +116,7 @@ for img1 in comparisonImages:
                 temp = img.filename.replace('.fits','_normed.fits')
                 imageData = fits.getdata(img.filename)
                 header = fits.getheader(img.filename)
-                S = header['pixel_scale_factor']
+                S = header['PIXSCALE']
                 imageData = S*imageData
                 fits.writeto(temp,imageData,header=header,clobber=True)
                 del(imageData,header,S)
@@ -137,20 +129,40 @@ for img1 in comparisonImages:
             if img.category == 'Deconvolved':
                 # Why not subtract median? We want to keep values near 0? Background is essentially 
                 # 0 anyways, so subtracting will just make entire background negative?                
-                
+                # Trimming deconvolved image to 1600x1600
+                deconvolvedImageData = fits_tools.getPixels(img.filename)
+                TRIM = True
+                if (np.shape(deconvolvedImageData) != (1600,1600)) and TRIM:
+                    print 'Trimming deconvolved image'
+                    padSize = np.array(list(np.shape(deconvolvedImageData))) - np.array([1600,1600])
+                    deconvolvedImageData_trimmed = deconvolvedImageData[padSize[0]/2:np.shape(deconvolvedImageData)[0]-padSize[0]/2,
+                                                                        padSize[1]/2:np.shape(deconvolvedImageData)[1]-padSize[1]/2]
+                    temp = (img.filename).replace('.fits','_trimmed.fits')
+                    fits.writeto(temp,deconvolvedImageData_trimmed,fits.getheader(img.filename),clobber=True)
+                    tempimg = Image(temp,'Deconvolved',img.ID)
+                    img = tempimg
                 # Scale images to SDSS co-add
                 temp = img.filename.replace('.fits','_normed.fits')
                 imageData = fits.getdata(img.filename)
                 header = fits.getheader(img.filename)
-                S = header['pixel_scale_factor']
+                S = header['PIXSCALE']
                 imageData = S*imageData
                 fits.writeto(temp,imageData,header=header,clobber=True)
                 del(imageData,header,S)
                 img.filename = temp
+                
                 # Write masked image to img.masked
                 temp = img.filename.replace('.fits','_masked.fits')
                 fits_tools.maskImage(img.filename,maskFile,masked_image_file=temp)
                 img.masked = temp
+                
+                if img.ID == 'Transposed':
+                    print '\n Transposing transposed_deconv.fits back to "original" orientation \n'
+                    temp = img.filename.replace('.fits','_transposed.fits')
+                    imageData = fits.getdata(img.filename)
+                    imageData_transposed = imageData.T # Transpose image data ( (A*)* = A )
+                    fits.writeto(temp,imageData_transposed,header=fits.getheader(img.filename),clobber=True)
+                    img.filename = temp
          
         # ===============================================================================
         #'''

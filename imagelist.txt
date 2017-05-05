@@ -1,5 +1,3 @@
-# Complete list of images 
-
 /home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-6522-x4060-y124_stitched_alignCropped.fits 
 /home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-4198-x5367-y131_stitched_alignCropped.fits 
 /home/DATA/STRIPE82_330-360_AlignCropped/test7/fpC-7121-x4489-y109_stitched_alignCropped.fits 

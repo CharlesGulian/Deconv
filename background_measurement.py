@@ -33,6 +33,9 @@ coaddedImage4 = Image('AstroImages/Coadd/fpC-4874-x1024-y65466_cutout.fits','Coa
 coaddedImage5 = Image('AstroImages/Coadd/fpC-4874-x1054-y53218_cutout.fits','Coadded','_Sparse2')
 coaddedImage6 = Image('AstroImages/Coadd/fpC-4874-x1072-y77946_cutout.fits','Coadded','_Sparse3')
 coaddedImage7 = Image('AstroImages/Coadd/fpC-4874-x1046-y47134_cutout.fits','Coadded','_Crowded1')
+deconvolvedImage12 = Image('AstroImages/Deconvolved/og_initialized_complete_deconv.fits','Deconvolved','OG_Initialized_Complete')
+
+
 
 # Deconvolved image
 deconvolvedImage = Image('AstroImages/Deconvolved/deconv.fits','Deconvolved','Deconvolved')
@@ -69,8 +72,8 @@ for i in range(len(image_list)):
     #imageData -= 1000.0
     
     mask = create_mask(imageData)
-    #temp = imageData*mask
-    #imageData = temp
+    temp = imageData*mask
+    imageData = temp
     
     M = 1
     N_list = [16,64,800]
@@ -108,7 +111,7 @@ for i in range(len(image_list)):
             
         plt.plot(y_values,points,color=colors[k],alpha=alphas[k],linewidth=linewidths[k])
         #plt.plot(y_values,1000.0*np.ones(len(y_values)),'k',linewidth=2.0)
-        plt.ylim(0.0,100.0)
+        plt.ylim(0.0,1.0)
     plt.title('Local Background Value vs. Y-coordinate')
     plt.xlabel('Image Y-coordinate (pixels)')
     plt.ylabel('Local Mean Background Value')
@@ -117,7 +120,7 @@ for i in range(len(image_list)):
     # ===============================================================================
     # Save data
     curr_dir = os.getcwd()
-    new_dir = os.path.join(curr_dir,'Figures','Jan25')
+    new_dir = os.path.join(curr_dir,'Figures','Apr24')
     #plt.savefig(os.path.join(new_dir,'normalized_background_value_vs_y.png'))
     
     # Create and save new plot with best-fit line

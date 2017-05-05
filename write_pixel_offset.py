@@ -35,6 +35,18 @@ def write_pixel_offset(x_offset,y_offset,image_file,new_image_file=None):
 
 deconvolvedImage2 = Image('AstroImages/Deconvolved/normal_deconv.fits','Deconvolved','Normal')
 deconvolvedImage3 = Image('AstroImages/Deconvolved/transposed_deconv.fits','Deconvolved','Transposed')
+deconvolvedImage4 = Image('AstroImages/Deconvolved/transposed_dir_deconv.fits','Deconvolved','Transposed_Dir')
+deconvolvedImage5 = Image('AstroImages/Deconvolved/twice_transposed_deconv.fits','Deconvolved','Twice_Transposed')
+deconvolvedImage6 = Image('AstroImages/Deconvolved/shuffled_deconv.fits','Deconvolved','Shuffled')
+deconvolvedImage7 = Image('AstroImages/Deconvolved/shuffled_seed1_deconv.fits','Deconvolved','Shuffled_Seed1')
+deconvolvedImage8 = Image('AstroImages/Deconvolved/initialized_complete_deconv.fits','Deconvolved','Initialized_Complete')
+deconvolvedImage9 = Image('AstroImages/Deconvolved/initialized_rm0-9_deconv.fits','Deconvolved','Initialized_rm0-9')
+deconvolvedImage10 = Image('AstroImages/Deconvolved/initialized_rm10-19_deconv.fits','Deconvolved','Initialized_rm10-19')
+deconvolvedImage11 = Image('AstroImages/Deconvolved/initialized_rm20-29_deconv.fits','Deconvolved','Initialized_rm20-29')
+deconvolvedImage12 = Image('AstroImages/Deconvolved/og_initialized_complete_deconv.fits','Deconvolved','OG_Initialized_Complete')
+deconvolvedImage13 = Image('AstroImages/Deconvolved/og_initialized_smoothed_complete_deconv.fits','Deconvolved','OG_Initialized_Smoothed_Complete')
 
-write_pixel_offset(0,0,deconvolvedImage2.filename)
-write_pixel_offset(0,0,deconvolvedImage3.filename)
+
+#write_pixel_offset(0,0,deconvolvedImage2.filename)
+#write_pixel_offset(0,0,deconvolvedImage3.filename)
+write_pixel_offset(0,0,deconvolvedImage13.filename)

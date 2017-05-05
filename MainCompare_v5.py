@@ -16,7 +16,6 @@ import pysex
 import sex_stats
 import sex_config
 import fits_tools
-from SciPyKDE import kde_scipy
 
 # Image deconvolution project:
 # Main script for data analysis, image comparison, photometric statistics, and more
@@ -53,11 +52,21 @@ coaddedImage3 = Image('AstroImages/Coadd/custom_coadd_mean.fits','Coadded','_Cus
 deconvolvedImage1 = Image('AstroImages/Deconvolved/deconv.fits','Deconvolved','Deconvolved')
 deconvolvedImage2 = Image('AstroImages/Deconvolved/normal_deconv.fits','Deconvolved','Normal')
 deconvolvedImage3 = Image('AstroImages/Deconvolved/transposed_deconv.fits','Deconvolved','Transposed')
-    
+deconvolvedImage4 = Image('AstroImages/Deconvolved/transposed_dir_deconv.fits','Deconvolved','Transposed_Dir')
+deconvolvedImage5 = Image('AstroImages/Deconvolved/twice_transposed_deconv.fits','Deconvolved','Twice_Transposed')
+deconvolvedImage6 = Image('AstroImages/Deconvolved/shuffled_deconv.fits','Deconvolved','Shuffled')
+deconvolvedImage7 = Image('AstroImages/Deconvolved/shuffled_seed1_deconv.fits','Deconvolved','Shuffled_Seed1')
+deconvolvedImage8 = Image('AstroImages/Deconvolved/initialized_complete_deconv.fits','Deconvolved','Initialized_Complete')
+deconvolvedImage9 = Image('AstroImages/Deconvolved/initialized_rm0-9_deconv.fits','Deconvolved','Initialized_rm0-9')
+deconvolvedImage10 = Image('AstroImages/Deconvolved/initialized_rm10-19_deconv.fits','Deconvolved','Initialized_rm10-19')
+deconvolvedImage11 = Image('AstroImages/Deconvolved/initialized_rm20-29_deconv.fits','Deconvolved','Initialized_rm20-29')
+deconvolvedImage12 = Image('AstroImages/Deconvolved/og_initialized_complete_deconv.fits','Deconvolved','OG_Initialized_Complete')
+deconvolvedImage13 = Image('AstroImages/Deconvolved/og_initialized_smoothed_complete_deconv.fits','Deconvolved','OG_Initialized_Smoothed_Complete')
+
 # ===============================================================================
     
 # List of images to be compared:
-comparisonImages = [coaddedImage2,deconvolvedImage3]
+comparisonImages = [coaddedImage2,deconvolvedImage13]
 
 # ===============================================================================
 # Image comparisons:
@@ -72,13 +81,13 @@ for img1 in comparisonImages:
         
         # ===============================================================================
         # Make directory to save results and figures to different comparison categories (Coadded vs. Coadded, Coadded vs. Deconvolved, etc.)
-        new_dir = os.path.join(curr_dir,'Figures','Apr10',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
+        new_dir = os.path.join(curr_dir,'Figures','May3',img1.category+img1.ID+'_vs_'+img2.category+img2.ID)
         if not os.path.exists(new_dir):
             os.mkdir(os.path.join(new_dir))
             
         # ===============================================================================
-        # Adjust image data for best comparison with SExtractor    
-            
+        # Adjust image data for best comparison with SExtractor
+        
         imgs = [img1,img2]
         for i,img in enumerate(imgs):
             
@@ -156,7 +165,7 @@ for img1 in comparisonImages:
                 fits_tools.maskImage(img.filename,maskFile,masked_image_file=temp)
                 img.masked = temp
                 
-                if img.ID == 'Transposed':
+                if (img.ID == 'Transposed' or img.ID == 'Transposed_Dir'):
                     print '\n Transposing transposed_deconv.fits back to "original" orientation \n'
                     temp = img.filename.replace('.fits','_transposed.fits')
                     imageData = fits.getdata(img.filename)
@@ -203,7 +212,7 @@ for img1 in comparisonImages:
         delt_x = x_offset2 - x_offset1
         delt_y = y_offset2 - y_offset1
         
-        # Shift second image to align with first image        
+        # Shift second image to align with first image    
         shifted_image2_data = fits_tools.shift_image(fits.getdata(img2.filename),delt_x,delt_y)
         
         # New image file names:
@@ -562,9 +571,9 @@ for img1 in comparisonImages:
             plt.scatter(np.log(flux2),np.log(flux1),c=y,cmap=cmap,alpha=0.85,linewidths=0.0)
             X = np.linspace(0.0,np.max(np.log(flux2_og))+2.0,1000.0)
             plt.plot(X,X,'g')
-            plt.plot(X,slope*X + intercept,'m',linewidth=0.5)
+            #plt.plot(X,slope*X + intercept,'m',linewidth=0.5)
             plt.colorbar()
-            plt.axis([0.0,np.max(np.log(flux2_og))+1.0,0.0,np.max(np.log(flux1_og))+1.0])
+            plt.axis([0.0,13.0,0.0,13.0])
             plt.xlabel('ln(flux2): '+img2.category+img2.ID)
             plt.ylabel('ln(flux1): '+img1.category+img1.ID)
             plt.title('Scatter plot of ln(flux 1st image) vs. ln(flux 2nd image)\n (color-coded to image y-coordinate)')
